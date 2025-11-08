@@ -1,0 +1,6 @@
+Flask
+psycopg[binary]
+python-dotenv
+flasgger
+flask-jwt-extended
+werkzeug

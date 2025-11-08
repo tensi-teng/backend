@@ -1,0 +1,2286 @@
+[
+  {
+    "id": 1,
+    "type": "Full Body",
+    "name": "Battle Rope Slams to Squat",
+    "muscles": [
+      "chest",
+      "hamstrings",
+      "back"
+    ],
+    "equipment": [
+      "Dumbbells",
+      "Bench"
+    ],
+    "instructions": "Battle Rope Slams to Squat targets the chest, hamstrings, back. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Dumbbells, Bench or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 2,
+    "type": "Full Body",
+    "name": "Full Body Ladder",
+    "muscles": [
+      "back",
+      "core",
+      "chest"
+    ],
+    "equipment": [
+      "Bodyweight"
+    ],
+    "instructions": "Full Body Ladder targets the back, core, chest. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Bodyweight or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 3,
+    "type": "Full Body",
+    "name": "Kettlebell Swing",
+    "muscles": [
+      "full body",
+      "glutes",
+      "shoulders"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "For Kettlebell Swing, maintain a neutral spine and engage full body, glutes, shoulders throughout the movement. Use None as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 4,
+    "type": "Full Body",
+    "name": "Burpee to Jump",
+    "muscles": [
+      "quads",
+      "core",
+      "full body"
+    ],
+    "equipment": [
+      "Pull-up Bar"
+    ],
+    "instructions": "For Burpee to Jump, maintain a neutral spine and engage quads, core, full body throughout the movement. Use Pull-up Bar as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 5,
+    "type": "Full Body",
+    "name": "Sandbag Clean and Press",
+    "muscles": [
+      "back",
+      "core",
+      "chest"
+    ],
+    "equipment": [
+      "Jump Rope"
+    ],
+    "instructions": "Sandbag Clean and Press: Start by setting up with proper form focusing on back, core, chest. Perform each rep with controlled tempo and breathe consistently. If using Jump Rope, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 6,
+    "type": "Full Body",
+    "name": "Thruster Ladder",
+    "muscles": [
+      "full body",
+      "back",
+      "glutes"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "Thruster Ladder targets the full body, back, glutes. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell or perform as bodyweight to scale the exercise.",
+    "level": "Expert"
+  },
+  {
+    "id": 7,
+    "type": "Full Body",
+    "name": "Farmer's Carry",
+    "muscles": [
+      "glutes",
+      "back",
+      "chest"
+    ],
+    "equipment": [
+      "Dumbbells",
+      "Bench"
+    ],
+    "instructions": "Farmer's Carry: Start by setting up with proper form focusing on glutes, back, chest. Perform each rep with controlled tempo and breathe consistently. If using Dumbbells, Bench, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 8,
+    "type": "Full Body",
+    "name": "Sandbag Clean and Press",
+    "muscles": [
+      "core",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": [
+      "Jump Rope"
+    ],
+    "instructions": "Sandbag Clean and Press targets the core, hamstrings, glutes. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Jump Rope or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 9,
+    "type": "Full Body",
+    "name": "Sandbag Bear Hug Carry",
+    "muscles": [
+      "back",
+      "quads",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Dumbbells",
+      "Bench"
+    ],
+    "instructions": "Sandbag Bear Hug Carry targets the back, quads, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Dumbbells, Bench or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 10,
+    "type": "Full Body",
+    "name": "Loaded Carry Medley",
+    "muscles": [
+      "glutes",
+      "shoulders",
+      "core"
+    ],
+    "equipment": [
+      "Dumbbells"
+    ],
+    "instructions": "For Loaded Carry Medley, maintain a neutral spine and engage glutes, shoulders, core throughout the movement. Use Dumbbells as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 11,
+    "type": "Full Body",
+    "name": "Weighted Step-up with Knee Drive",
+    "muscles": [
+      "hamstrings",
+      "back",
+      "calves"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "Weighted Step-up with Knee Drive targets the hamstrings, back, calves. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Medicine Ball or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 12,
+    "type": "Full Body",
+    "name": "Thruster Ladder",
+    "muscles": [
+      "quads",
+      "hamstrings",
+      "back"
+    ],
+    "equipment": [
+      "Dumbbells",
+      "Bench"
+    ],
+    "instructions": "Thruster Ladder targets the quads, hamstrings, back. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Dumbbells, Bench or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 13,
+    "type": "Full Body",
+    "name": "Sandbag Shouldering",
+    "muscles": [
+      "core",
+      "full body",
+      "quads"
+    ],
+    "equipment": [
+      "Dumbbells",
+      "Bench"
+    ],
+    "instructions": "For Sandbag Shouldering, maintain a neutral spine and engage core, full body, quads throughout the movement. Use Dumbbells, Bench as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 14,
+    "type": "Full Body",
+    "name": "Bear Crawl",
+    "muscles": [
+      "chest",
+      "back",
+      "calves"
+    ],
+    "equipment": [
+      "Resistance Band"
+    ],
+    "instructions": "Bear Crawl: Start by setting up with proper form focusing on chest, back, calves. Perform each rep with controlled tempo and breathe consistently. If using Resistance Band, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 15,
+    "type": "Full Body",
+    "name": "Kettlebell Clean & Press",
+    "muscles": [
+      "core",
+      "calves",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Pull-up Bar"
+    ],
+    "instructions": "Kettlebell Clean & Press: Start by setting up with proper form focusing on core, calves, hamstrings. Perform each rep with controlled tempo and breathe consistently. If using Pull-up Bar, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 16,
+    "type": "Full Body",
+    "name": "Battle Rope Slams to Squat",
+    "muscles": [
+      "full body",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "For Battle Rope Slams to Squat, maintain a neutral spine and engage full body, hamstrings, core throughout the movement. Use Medicine Ball as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 17,
+    "type": "Full Body",
+    "name": "Burpee to Jump",
+    "muscles": [
+      "hamstrings",
+      "quads",
+      "full body"
+    ],
+    "equipment": [
+      "Kettlebell"
+    ],
+    "instructions": "Burpee to Jump targets the hamstrings, quads, full body. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Kettlebell or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 18,
+    "type": "Full Body",
+    "name": "Conditioning Complex",
+    "muscles": [
+      "glutes",
+      "quads",
+      "calves"
+    ],
+    "equipment": [
+      "Resistance Band"
+    ],
+    "instructions": "Conditioning Complex targets the glutes, quads, calves. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Resistance Band or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 19,
+    "type": "Full Body",
+    "name": "Burpee to Jump",
+    "muscles": [
+      "shoulders",
+      "calves",
+      "chest"
+    ],
+    "equipment": [
+      "Kettlebell"
+    ],
+    "instructions": "For Burpee to Jump, maintain a neutral spine and engage shoulders, calves, chest throughout the movement. Use Kettlebell as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 20,
+    "type": "Full Body",
+    "name": "Battle Rope Slams",
+    "muscles": [
+      "chest",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "Battle Rope Slams: Start by setting up with proper form focusing on chest, glutes, hamstrings. Perform each rep with controlled tempo and breathe consistently. If using Barbell, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 21,
+    "type": "Full Body",
+    "name": "Full Body Ladder",
+    "muscles": [
+      "quads",
+      "full body",
+      "shoulders"
+    ],
+    "equipment": [
+      "Sandbag"
+    ],
+    "instructions": "Full Body Ladder targets the quads, full body, shoulders. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Sandbag or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 22,
+    "type": "Full Body",
+    "name": "All-in-One Circuit",
+    "muscles": [
+      "core",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Barbell",
+      "Squat Rack"
+    ],
+    "instructions": "All-in-One Circuit targets the core, glutes, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell, Squat Rack or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 23,
+    "type": "Full Body",
+    "name": "Farmer's Carry",
+    "muscles": [
+      "calves",
+      "full body",
+      "chest"
+    ],
+    "equipment": [
+      "Dumbbells",
+      "Bench"
+    ],
+    "instructions": "Farmer's Carry targets the calves, full body, chest. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Dumbbells, Bench or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 24,
+    "type": "Full Body",
+    "name": "Loaded Carry Medley",
+    "muscles": [
+      "glutes",
+      "full body",
+      "chest"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "Loaded Carry Medley: Start by setting up with proper form focusing on glutes, full body, chest. Perform each rep with controlled tempo and breathe consistently. If using Barbell, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 25,
+    "type": "Full Body",
+    "name": "Thruster",
+    "muscles": [
+      "shoulders",
+      "back",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Dumbbells",
+      "Bench"
+    ],
+    "instructions": "Thruster targets the shoulders, back, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Dumbbells, Bench or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 26,
+    "type": "Full Body",
+    "name": "Farmer's Sprint",
+    "muscles": [
+      "calves",
+      "glutes",
+      "core"
+    ],
+    "equipment": [
+      "Sandbag"
+    ],
+    "instructions": "Farmer's Sprint: Start by setting up with proper form focusing on calves, glutes, core. Perform each rep with controlled tempo and breathe consistently. If using Sandbag, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 27,
+    "type": "Full Body",
+    "name": "Burpee Broad Jump",
+    "muscles": [
+      "shoulders",
+      "core",
+      "glutes"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "Burpee Broad Jump targets the shoulders, core, glutes. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Stability Ball or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 28,
+    "type": "Full Body",
+    "name": "Sandbag Clean and Press",
+    "muscles": [
+      "chest",
+      "core",
+      "shoulders"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "Sandbag Clean and Press: Start by setting up with proper form focusing on chest, core, shoulders. Perform each rep with controlled tempo and breathe consistently. If using Medicine Ball, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 29,
+    "type": "Full Body",
+    "name": "Turkish Get-up Partial",
+    "muscles": [
+      "full body",
+      "calves",
+      "back"
+    ],
+    "equipment": [
+      "Battle Ropes"
+    ],
+    "instructions": "Turkish Get-up Partial: Start by setting up with proper form focusing on full body, calves, back. Perform each rep with controlled tempo and breathe consistently. If using Battle Ropes, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 30,
+    "type": "Full Body",
+    "name": "Box to Overhead Press",
+    "muscles": [
+      "full body",
+      "back",
+      "chest"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "Box to Overhead Press: Start by setting up with proper form focusing on full body, back, chest. Perform each rep with controlled tempo and breathe consistently. If using None, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 31,
+    "type": "Full Body",
+    "name": "Bear Complex",
+    "muscles": [
+      "core",
+      "calves",
+      "glutes"
+    ],
+    "equipment": [
+      "Barbell",
+      "Squat Rack"
+    ],
+    "instructions": "Bear Complex: Start by setting up with proper form focusing on core, calves, glutes. Perform each rep with controlled tempo and breathe consistently. If using Barbell, Squat Rack, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 32,
+    "type": "Full Body",
+    "name": "Kettlebell Clean & Press",
+    "muscles": [
+      "chest",
+      "core",
+      "quads"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "Kettlebell Clean & Press targets the chest, core, quads. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Stability Ball or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 33,
+    "type": "Full Body",
+    "name": "Loaded Carry Medley",
+    "muscles": [
+      "calves",
+      "quads",
+      "back"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "Loaded Carry Medley targets the calves, quads, back. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Cable Machine or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 34,
+    "type": "Full Body",
+    "name": "Full Body Ladder",
+    "muscles": [
+      "chest",
+      "shoulders",
+      "full body"
+    ],
+    "equipment": [
+      "Dumbbells"
+    ],
+    "instructions": "Full Body Ladder targets the chest, shoulders, full body. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Dumbbells or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 35,
+    "type": "Full Body",
+    "name": "Bear Complex",
+    "muscles": [
+      "chest",
+      "back",
+      "core"
+    ],
+    "equipment": [
+      "Resistance Band"
+    ],
+    "instructions": "Bear Complex: Start by setting up with proper form focusing on chest, back, core. Perform each rep with controlled tempo and breathe consistently. If using Resistance Band, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 36,
+    "type": "Full Body",
+    "name": "Weighted Step-up with Knee Drive",
+    "muscles": [
+      "back",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Dumbbells"
+    ],
+    "instructions": "Weighted Step-up with Knee Drive targets the back, glutes, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Dumbbells or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 37,
+    "type": "Full Body",
+    "name": "KB Swing Complex",
+    "muscles": [
+      "full body",
+      "shoulders",
+      "quads"
+    ],
+    "equipment": [
+      "Barbell",
+      "Squat Rack"
+    ],
+    "instructions": "For KB Swing Complex, maintain a neutral spine and engage full body, shoulders, quads throughout the movement. Use Barbell, Squat Rack as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 38,
+    "type": "Full Body",
+    "name": "Weighted Step-up with Knee Drive",
+    "muscles": [
+      "quads",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "Weighted Step-up with Knee Drive: Start by setting up with proper form focusing on quads, hamstrings, glutes. Perform each rep with controlled tempo and breathe consistently. If using Medicine Ball, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 39,
+    "type": "Full Body",
+    "name": "Thruster Ladder",
+    "muscles": [
+      "back",
+      "full body",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Barbell",
+      "Squat Rack"
+    ],
+    "instructions": "For Thruster Ladder, maintain a neutral spine and engage back, full body, hamstrings throughout the movement. Use Barbell, Squat Rack as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 40,
+    "type": "Full Body",
+    "name": "Turkish Get-up",
+    "muscles": [
+      "glutes",
+      "shoulders",
+      "quads"
+    ],
+    "equipment": [
+      "Resistance Band"
+    ],
+    "instructions": "For Turkish Get-up, maintain a neutral spine and engage glutes, shoulders, quads throughout the movement. Use Resistance Band as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 41,
+    "type": "HIIT",
+    "name": "Rapid Fire Rounds",
+    "muscles": [
+      "shoulders",
+      "core",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Bodyweight"
+    ],
+    "instructions": "Rapid Fire Rounds targets the shoulders, core, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Bodyweight or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 42,
+    "type": "HIIT",
+    "name": "30/30 Sprints",
+    "muscles": [
+      "cardio",
+      "quads",
+      "full body"
+    ],
+    "equipment": [
+      "Kettlebell"
+    ],
+    "instructions": "For 30/30 Sprints, maintain a neutral spine and engage cardio, quads, full body throughout the movement. Use Kettlebell as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 43,
+    "type": "HIIT",
+    "name": "Circuit of Doom",
+    "muscles": [
+      "cardio",
+      "core",
+      "quads"
+    ],
+    "equipment": [
+      "Barbell",
+      "Squat Rack"
+    ],
+    "instructions": "Circuit of Doom targets the cardio, core, quads. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell, Squat Rack or perform as bodyweight to scale the exercise.",
+    "level": "Expert"
+  },
+  {
+    "id": 44,
+    "type": "HIIT",
+    "name": "Quick Fire Sprints",
+    "muscles": [
+      "quads",
+      "full body",
+      "core"
+    ],
+    "equipment": [
+      "Battle Ropes"
+    ],
+    "instructions": "For Quick Fire Sprints, maintain a neutral spine and engage quads, full body, core throughout the movement. Use Battle Ropes as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 45,
+    "type": "HIIT",
+    "name": "EMOM Mixed Movements",
+    "muscles": [
+      "core",
+      "quads",
+      "cardio"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "EMOM Mixed Movements: Start by setting up with proper form focusing on core, quads, cardio. Perform each rep with controlled tempo and breathe consistently. If using Stability Ball, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 46,
+    "type": "HIIT",
+    "name": "Carousel Circuits",
+    "muscles": [
+      "full body",
+      "core",
+      "cardio"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "Carousel Circuits targets the full body, core, cardio. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use None or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 47,
+    "type": "HIIT",
+    "name": "Sprint to Walk",
+    "muscles": [
+      "glutes",
+      "cardio",
+      "full body"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "Sprint to Walk: Start by setting up with proper form focusing on glutes, cardio, full body. Perform each rep with controlled tempo and breathe consistently. If using Cable Machine, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 48,
+    "type": "HIIT",
+    "name": "Interval Ladder",
+    "muscles": [
+      "cardio",
+      "core",
+      "shoulders"
+    ],
+    "equipment": [
+      "Kettlebell"
+    ],
+    "instructions": "For Interval Ladder, maintain a neutral spine and engage cardio, core, shoulders throughout the movement. Use Kettlebell as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 49,
+    "type": "HIIT",
+    "name": "Rapid Fire Rounds",
+    "muscles": [
+      "core",
+      "cardio",
+      "shoulders"
+    ],
+    "equipment": [
+      "Resistance Band"
+    ],
+    "instructions": "For Rapid Fire Rounds, maintain a neutral spine and engage core, cardio, shoulders throughout the movement. Use Resistance Band as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 50,
+    "type": "HIIT",
+    "name": "Sprint Intervals",
+    "muscles": [
+      "cardio",
+      "core",
+      "quads"
+    ],
+    "equipment": [
+      "Battle Ropes"
+    ],
+    "instructions": "Sprint Intervals: Start by setting up with proper form focusing on cardio, core, quads. Perform each rep with controlled tempo and breathe consistently. If using Battle Ropes, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 51,
+    "type": "HIIT",
+    "name": "Conditioning Tabata",
+    "muscles": [
+      "cardio",
+      "core",
+      "full body"
+    ],
+    "equipment": [
+      "Plyo Box"
+    ],
+    "instructions": "Conditioning Tabata: Start by setting up with proper form focusing on cardio, core, full body. Perform each rep with controlled tempo and breathe consistently. If using Plyo Box, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 52,
+    "type": "HIIT",
+    "name": "Boxing Interval Rounds",
+    "muscles": [
+      "shoulders",
+      "glutes",
+      "quads"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "Boxing Interval Rounds: Start by setting up with proper form focusing on shoulders, glutes, quads. Perform each rep with controlled tempo and breathe consistently. If using Cable Machine, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 53,
+    "type": "HIIT",
+    "name": "Sprint Intervals",
+    "muscles": [
+      "core",
+      "cardio",
+      "glutes"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "For Sprint Intervals, maintain a neutral spine and engage core, cardio, glutes throughout the movement. Use Medicine Ball as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 54,
+    "type": "HIIT",
+    "name": "Interval Ladder",
+    "muscles": [
+      "core",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "For Interval Ladder, maintain a neutral spine and engage core, hamstrings, glutes throughout the movement. Use None as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 55,
+    "type": "HIIT",
+    "name": "Jump Rope Intervals",
+    "muscles": [
+      "hamstrings",
+      "quads",
+      "full body"
+    ],
+    "equipment": [
+      "Kettlebell"
+    ],
+    "instructions": "For Jump Rope Intervals, maintain a neutral spine and engage hamstrings, quads, full body throughout the movement. Use Kettlebell as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 56,
+    "type": "HIIT",
+    "name": "Interval Circuit B",
+    "muscles": [
+      "hamstrings",
+      "shoulders",
+      "full body"
+    ],
+    "equipment": [
+      "Plyo Box"
+    ],
+    "instructions": "Interval Circuit B: Start by setting up with proper form focusing on hamstrings, shoulders, full body. Perform each rep with controlled tempo and breathe consistently. If using Plyo Box, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 57,
+    "type": "HIIT",
+    "name": "Interval Circuit B",
+    "muscles": [
+      "full body",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": [
+      "Barbell",
+      "Squat Rack"
+    ],
+    "instructions": "Interval Circuit B targets the full body, hamstrings, core. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell, Squat Rack or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 58,
+    "type": "HIIT",
+    "name": "Alternating Sprint Sets",
+    "muscles": [
+      "hamstrings",
+      "quads",
+      "full body"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "For Alternating Sprint Sets, maintain a neutral spine and engage hamstrings, quads, full body throughout the movement. Use Cable Machine as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 59,
+    "type": "HIIT",
+    "name": "Shockwave Intervals",
+    "muscles": [
+      "core",
+      "quads",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "For Shockwave Intervals, maintain a neutral spine and engage core, quads, hamstrings throughout the movement. Use Mat as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 60,
+    "type": "HIIT",
+    "name": "Jump Rope Intervals",
+    "muscles": [
+      "hamstrings",
+      "shoulders",
+      "quads"
+    ],
+    "equipment": [
+      "Plyo Box"
+    ],
+    "instructions": "For Jump Rope Intervals, maintain a neutral spine and engage hamstrings, shoulders, quads throughout the movement. Use Plyo Box as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 61,
+    "type": "HIIT",
+    "name": "Rowing Intervals HIIT",
+    "muscles": [
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "Rowing Intervals HIIT: Start by setting up with proper form focusing on glutes, hamstrings, core. Perform each rep with controlled tempo and breathe consistently. If using Medicine Ball, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 62,
+    "type": "HIIT",
+    "name": "Power Intervals",
+    "muscles": [
+      "glutes",
+      "core",
+      "cardio"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "Power Intervals targets the glutes, core, cardio. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 63,
+    "type": "HIIT",
+    "name": "Alternating Sprint Sets",
+    "muscles": [
+      "full body",
+      "cardio",
+      "quads"
+    ],
+    "equipment": [
+      "Dumbbells",
+      "Bench"
+    ],
+    "instructions": "Alternating Sprint Sets: Start by setting up with proper form focusing on full body, cardio, quads. Perform each rep with controlled tempo and breathe consistently. If using Dumbbells, Bench, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 64,
+    "type": "HIIT",
+    "name": "Treadmill Incline Intervals",
+    "muscles": [
+      "glutes",
+      "hamstrings",
+      "full body"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "Treadmill Incline Intervals: Start by setting up with proper form focusing on glutes, hamstrings, full body. Perform each rep with controlled tempo and breathe consistently. If using Stability Ball, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 65,
+    "type": "HIIT",
+    "name": "Partner HIIT",
+    "muscles": [
+      "glutes",
+      "shoulders",
+      "cardio"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Partner HIIT: Start by setting up with proper form focusing on glutes, shoulders, cardio. Perform each rep with controlled tempo and breathe consistently. If using Mat, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 66,
+    "type": "HIIT",
+    "name": "Interval Circuit B",
+    "muscles": [
+      "cardio",
+      "shoulders",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "Interval Circuit B: Start by setting up with proper form focusing on cardio, shoulders, hamstrings. Perform each rep with controlled tempo and breathe consistently. If using Stability Ball, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 67,
+    "type": "HIIT",
+    "name": "Explosive Finisher",
+    "muscles": [
+      "cardio",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "For Explosive Finisher, maintain a neutral spine and engage cardio, glutes, hamstrings throughout the movement. Use None as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 68,
+    "type": "HIIT",
+    "name": "Rapid Fire Rounds",
+    "muscles": [
+      "shoulders",
+      "core",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Battle Ropes"
+    ],
+    "instructions": "Rapid Fire Rounds: Start by setting up with proper form focusing on shoulders, core, hamstrings. Perform each rep with controlled tempo and breathe consistently. If using Battle Ropes, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 69,
+    "type": "HIIT",
+    "name": "Metabolic Conditioning Circuit",
+    "muscles": [
+      "glutes",
+      "quads",
+      "cardio"
+    ],
+    "equipment": [
+      "Pull-up Bar"
+    ],
+    "instructions": "Metabolic Conditioning Circuit targets the glutes, quads, cardio. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Pull-up Bar or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 70,
+    "type": "HIIT",
+    "name": "Treadmill Incline Intervals",
+    "muscles": [
+      "quads",
+      "glutes",
+      "full body"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "Treadmill Incline Intervals targets the quads, glutes, full body. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Cable Machine or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 71,
+    "type": "HIIT",
+    "name": "Battle Rope Intervals",
+    "muscles": [
+      "cardio",
+      "shoulders",
+      "core"
+    ],
+    "equipment": [
+      "Plyo Box"
+    ],
+    "instructions": "Battle Rope Intervals: Start by setting up with proper form focusing on cardio, shoulders, core. Perform each rep with controlled tempo and breathe consistently. If using Plyo Box, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 72,
+    "type": "HIIT",
+    "name": "HIIT Pyramid",
+    "muscles": [
+      "glutes",
+      "quads",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "For HIIT Pyramid, maintain a neutral spine and engage glutes, quads, hamstrings throughout the movement. Use Stability Ball as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 73,
+    "type": "HIIT",
+    "name": "Partner HIIT",
+    "muscles": [
+      "shoulders",
+      "hamstrings",
+      "full body"
+    ],
+    "equipment": [
+      "Plyo Box"
+    ],
+    "instructions": "For Partner HIIT, maintain a neutral spine and engage shoulders, hamstrings, full body throughout the movement. Use Plyo Box as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 74,
+    "type": "HIIT",
+    "name": "Partner HIIT",
+    "muscles": [
+      "shoulders",
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "For Partner HIIT, maintain a neutral spine and engage shoulders, glutes, hamstrings throughout the movement. Use None as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 75,
+    "type": "HIIT",
+    "name": "Bike Sprint Intervals",
+    "muscles": [
+      "quads",
+      "glutes",
+      "core"
+    ],
+    "equipment": [
+      "Bodyweight"
+    ],
+    "instructions": "For Bike Sprint Intervals, maintain a neutral spine and engage quads, glutes, core throughout the movement. Use Bodyweight as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 76,
+    "type": "HIIT",
+    "name": "Stair Sprints",
+    "muscles": [
+      "shoulders",
+      "glutes",
+      "cardio"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "Stair Sprints targets the shoulders, glutes, cardio. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use None or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 77,
+    "type": "HIIT",
+    "name": "Sprint Intervals",
+    "muscles": [
+      "full body",
+      "core",
+      "glutes"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "For Sprint Intervals, maintain a neutral spine and engage full body, core, glutes throughout the movement. Use Mat as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 78,
+    "type": "HIIT",
+    "name": "Partner HIIT",
+    "muscles": [
+      "quads",
+      "cardio",
+      "glutes"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "For Partner HIIT, maintain a neutral spine and engage quads, cardio, glutes throughout the movement. Use Medicine Ball as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 79,
+    "type": "HIIT",
+    "name": "HIIT Pyramid",
+    "muscles": [
+      "quads",
+      "full body",
+      "glutes"
+    ],
+    "equipment": [
+      "Bodyweight"
+    ],
+    "instructions": "For HIIT Pyramid, maintain a neutral spine and engage quads, full body, glutes throughout the movement. Use Bodyweight as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 80,
+    "type": "HIIT",
+    "name": "Bike Sprint Intervals",
+    "muscles": [
+      "core",
+      "full body",
+      "shoulders"
+    ],
+    "equipment": [
+      "Bodyweight"
+    ],
+    "instructions": "Bike Sprint Intervals: Start by setting up with proper form focusing on core, full body, shoulders. Perform each rep with controlled tempo and breathe consistently. If using Bodyweight, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 81,
+    "type": "Pilates",
+    "name": "Side Bend",
+    "muscles": [
+      "spinal mobility",
+      "thoracic",
+      "lower back"
+    ],
+    "equipment": [
+      "Mat",
+      "Small Ball"
+    ],
+    "instructions": "Side Bend: Start by setting up with proper form focusing on spinal mobility, thoracic, lower back. Perform each rep with controlled tempo and breathe consistently. If using Mat, Small Ball, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 82,
+    "type": "Pilates",
+    "name": "Breast Stroke Prep",
+    "muscles": [
+      "lower back",
+      "glutes",
+      "thoracic"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Breast Stroke Prep targets the lower back, glutes, thoracic. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat or perform as bodyweight to scale the exercise.",
+    "level": "Expert"
+  },
+  {
+    "id": 83,
+    "type": "Pilates",
+    "name": "Swan Prep",
+    "muscles": [
+      "thoracic",
+      "spinal mobility",
+      "glutes"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Swan Prep targets the thoracic, spinal mobility, glutes. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat or perform as bodyweight to scale the exercise.",
+    "level": "Expert"
+  },
+  {
+    "id": 84,
+    "type": "Pilates",
+    "name": "Bridge March",
+    "muscles": [
+      "hip flexors",
+      "thoracic",
+      "spinal mobility"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Bridge March: Start by setting up with proper form focusing on hip flexors, thoracic, spinal mobility. Perform each rep with controlled tempo and breathe consistently. If using Mat, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 85,
+    "type": "Pilates",
+    "name": "Swan Prep",
+    "muscles": [
+      "lower back",
+      "glutes",
+      "obliques"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Swan Prep: Start by setting up with proper form focusing on lower back, glutes, obliques. Perform each rep with controlled tempo and breathe consistently. If using Mat, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 86,
+    "type": "Pilates",
+    "name": "Scissors",
+    "muscles": [
+      "obliques",
+      "hip flexors",
+      "glutes"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "For Scissors, maintain a neutral spine and engage obliques, hip flexors, glutes throughout the movement. Use Mat as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 87,
+    "type": "Pilates",
+    "name": "Mat Fundamentals",
+    "muscles": [
+      "hip flexors",
+      "core",
+      "thoracic"
+    ],
+    "equipment": [
+      "Mat",
+      "Small Ball"
+    ],
+    "instructions": "Mat Fundamentals targets the hip flexors, core, thoracic. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat, Small Ball or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 88,
+    "type": "Pilates",
+    "name": "Teaser",
+    "muscles": [
+      "hip flexors",
+      "spinal mobility",
+      "obliques"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Teaser targets the hip flexors, spinal mobility, obliques. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat, Light Band or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 89,
+    "type": "Pilates",
+    "name": "Pelvic Tilt Flow",
+    "muscles": [
+      "hip flexors",
+      "thoracic",
+      "lower back"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Pelvic Tilt Flow: Start by setting up with proper form focusing on hip flexors, thoracic, lower back. Perform each rep with controlled tempo and breathe consistently. If using Mat, Light Band, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 90,
+    "type": "Pilates",
+    "name": "Mat Fundamentals",
+    "muscles": [
+      "core",
+      "glutes",
+      "hip flexors"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Mat Fundamentals targets the core, glutes, hip flexors. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 91,
+    "type": "Pilates",
+    "name": "Roll Over",
+    "muscles": [
+      "glutes",
+      "core",
+      "hip flexors"
+    ],
+    "equipment": [
+      "Mat",
+      "Small Ball"
+    ],
+    "instructions": "For Roll Over, maintain a neutral spine and engage glutes, core, hip flexors throughout the movement. Use Mat, Small Ball as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 92,
+    "type": "Pilates",
+    "name": "Teaser Progression",
+    "muscles": [
+      "glutes",
+      "obliques",
+      "thoracic"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Teaser Progression: Start by setting up with proper form focusing on glutes, obliques, thoracic. Perform each rep with controlled tempo and breathe consistently. If using Mat, Light Band, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 93,
+    "type": "Pilates",
+    "name": "Mermaid Stretch",
+    "muscles": [
+      "lower back",
+      "hip flexors",
+      "thoracic"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Mermaid Stretch targets the lower back, hip flexors, thoracic. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat, Light Band or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 94,
+    "type": "Pilates",
+    "name": "Neck Pull (modified)",
+    "muscles": [
+      "hip flexors",
+      "thoracic",
+      "core"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Neck Pull (modified): Start by setting up with proper form focusing on hip flexors, thoracic, core. Perform each rep with controlled tempo and breathe consistently. If using Mat, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 95,
+    "type": "Pilates",
+    "name": "Side Kick Series",
+    "muscles": [
+      "lower back",
+      "obliques",
+      "glutes"
+    ],
+    "equipment": [
+      "Mat",
+      "Small Ball"
+    ],
+    "instructions": "Side Kick Series targets the lower back, obliques, glutes. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat, Small Ball or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 96,
+    "type": "Pilates",
+    "name": "Toe Taps",
+    "muscles": [
+      "glutes",
+      "thoracic",
+      "hip flexors"
+    ],
+    "equipment": [
+      "Mat",
+      "Small Ball"
+    ],
+    "instructions": "Toe Taps targets the glutes, thoracic, hip flexors. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat, Small Ball or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 97,
+    "type": "Pilates",
+    "name": "Spine Stretch Forward",
+    "muscles": [
+      "glutes",
+      "core",
+      "obliques"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "For Spine Stretch Forward, maintain a neutral spine and engage glutes, core, obliques throughout the movement. Use Mat, Light Band as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 98,
+    "type": "Pilates",
+    "name": "Shoulder Bridge",
+    "muscles": [
+      "lower back",
+      "obliques",
+      "thoracic"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Shoulder Bridge: Start by setting up with proper form focusing on lower back, obliques, thoracic. Perform each rep with controlled tempo and breathe consistently. If using Mat, Light Band, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 99,
+    "type": "Pilates",
+    "name": "Side Kick Series",
+    "muscles": [
+      "spinal mobility",
+      "glutes",
+      "thoracic"
+    ],
+    "equipment": [
+      "Mat",
+      "Small Ball"
+    ],
+    "instructions": "For Side Kick Series, maintain a neutral spine and engage spinal mobility, glutes, thoracic throughout the movement. Use Mat, Small Ball as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 100,
+    "type": "Pilates",
+    "name": "Single Leg Stretch",
+    "muscles": [
+      "core",
+      "obliques",
+      "glutes"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "For Single Leg Stretch, maintain a neutral spine and engage core, obliques, glutes throughout the movement. Use Mat, Light Band as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 101,
+    "type": "Pilates",
+    "name": "Swan Prep",
+    "muscles": [
+      "thoracic",
+      "core",
+      "obliques"
+    ],
+    "equipment": [
+      "Mat",
+      "Small Ball"
+    ],
+    "instructions": "Swan Prep: Start by setting up with proper form focusing on thoracic, core, obliques. Perform each rep with controlled tempo and breathe consistently. If using Mat, Small Ball, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 102,
+    "type": "Pilates",
+    "name": "Single Leg Stretch",
+    "muscles": [
+      "glutes",
+      "hip flexors",
+      "core"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Single Leg Stretch targets the glutes, hip flexors, core. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 103,
+    "type": "Pilates",
+    "name": "Bridge March",
+    "muscles": [
+      "core",
+      "spinal mobility",
+      "lower back"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Bridge March: Start by setting up with proper form focusing on core, spinal mobility, lower back. Perform each rep with controlled tempo and breathe consistently. If using Mat, Light Band, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 104,
+    "type": "Pilates",
+    "name": "Swan Prep",
+    "muscles": [
+      "obliques",
+      "hip flexors",
+      "thoracic"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Swan Prep targets the obliques, hip flexors, thoracic. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat, Light Band or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 105,
+    "type": "Pilates",
+    "name": "Roll Over",
+    "muscles": [
+      "hip flexors",
+      "thoracic",
+      "glutes"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Roll Over targets the hip flexors, thoracic, glutes. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat, Light Band or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 106,
+    "type": "Pilates",
+    "name": "Single Leg Stretch",
+    "muscles": [
+      "obliques",
+      "lower back",
+      "core"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Single Leg Stretch: Start by setting up with proper form focusing on obliques, lower back, core. Perform each rep with controlled tempo and breathe consistently. If using Mat, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 107,
+    "type": "Pilates",
+    "name": "Pelvic Curl",
+    "muscles": [
+      "spinal mobility",
+      "thoracic",
+      "obliques"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Pelvic Curl targets the spinal mobility, thoracic, obliques. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 108,
+    "type": "Pilates",
+    "name": "Side Bend",
+    "muscles": [
+      "hip flexors",
+      "glutes",
+      "core"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "For Side Bend, maintain a neutral spine and engage hip flexors, glutes, core throughout the movement. Use Mat as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 109,
+    "type": "Pilates",
+    "name": "Roll Up",
+    "muscles": [
+      "lower back",
+      "spinal mobility",
+      "glutes"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Roll Up: Start by setting up with proper form focusing on lower back, spinal mobility, glutes. Perform each rep with controlled tempo and breathe consistently. If using Mat, Light Band, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 110,
+    "type": "Pilates",
+    "name": "Swimming",
+    "muscles": [
+      "core",
+      "obliques",
+      "spinal mobility"
+    ],
+    "equipment": [
+      "Mat",
+      "Light Band"
+    ],
+    "instructions": "Swimming: Start by setting up with proper form focusing on core, obliques, spinal mobility. Perform each rep with controlled tempo and breathe consistently. If using Mat, Light Band, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 111,
+    "type": "Muscle-Specific",
+    "name": "Incline Dumbbell Press",
+    "muscles": [
+      "chest",
+      "back",
+      "quads"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "For Incline Dumbbell Press, maintain a neutral spine and engage chest, back, quads throughout the movement. Use Cable Machine as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 112,
+    "type": "Muscle-Specific",
+    "name": "Ring Push-up",
+    "muscles": [
+      "chest",
+      "quads",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "Ring Push-up targets the chest, quads, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Cable Machine or perform as bodyweight to scale the exercise.",
+    "level": "Expert"
+  },
+  {
+    "id": 113,
+    "type": "Muscle-Specific",
+    "name": "Medicine Ball Chest Pass",
+    "muscles": [
+      "chest",
+      "calves",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "Medicine Ball Chest Pass targets the chest, calves, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell or perform as bodyweight to scale the exercise.",
+    "level": "Expert"
+  },
+  {
+    "id": 114,
+    "type": "Muscle-Specific",
+    "name": "Dumbbell Fly",
+    "muscles": [
+      "chest",
+      "shoulders",
+      "back"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "Dumbbell Fly targets the chest, shoulders, back. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 115,
+    "type": "Muscle-Specific",
+    "name": "Decline Push-up",
+    "muscles": [
+      "chest",
+      "back",
+      "core"
+    ],
+    "equipment": [
+      "Pull-up Bar"
+    ],
+    "instructions": "Decline Push-up: Start by setting up with proper form focusing on chest, back, core. Perform each rep with controlled tempo and breathe consistently. If using Pull-up Bar, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 116,
+    "type": "Muscle-Specific",
+    "name": "Ring Push-up",
+    "muscles": [
+      "chest",
+      "calves",
+      "glutes"
+    ],
+    "equipment": [
+      "Resistance Band"
+    ],
+    "instructions": "For Ring Push-up, maintain a neutral spine and engage chest, calves, glutes throughout the movement. Use Resistance Band as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 117,
+    "type": "Muscle-Specific",
+    "name": "Incline Dumbbell Press",
+    "muscles": [
+      "chest",
+      "calves",
+      "glutes"
+    ],
+    "equipment": [
+      "Battle Ropes"
+    ],
+    "instructions": "Incline Dumbbell Press: Start by setting up with proper form focusing on chest, calves, glutes. Perform each rep with controlled tempo and breathe consistently. If using Battle Ropes, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 118,
+    "type": "Muscle-Specific",
+    "name": "Dumbbell Fly",
+    "muscles": [
+      "chest",
+      "core",
+      "arms"
+    ],
+    "equipment": [
+      "Sandbag"
+    ],
+    "instructions": "Dumbbell Fly targets the chest, core, arms. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Sandbag or perform as bodyweight to scale the exercise.",
+    "level": "Expert"
+  },
+  {
+    "id": 119,
+    "type": "Muscle-Specific",
+    "name": "Deadlift",
+    "muscles": [
+      "back",
+      "calves",
+      "chest"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "For Deadlift, maintain a neutral spine and engage back, calves, chest throughout the movement. Use Medicine Ball as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 120,
+    "type": "Muscle-Specific",
+    "name": "Single-arm Cable Row",
+    "muscles": [
+      "back",
+      "chest",
+      "arms"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "Single-arm Cable Row targets the back, chest, arms. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use None or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 121,
+    "type": "Muscle-Specific",
+    "name": "Dumbbell Row",
+    "muscles": [
+      "back",
+      "calves",
+      "arms"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "Dumbbell Row targets the back, calves, arms. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Stability Ball or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 122,
+    "type": "Muscle-Specific",
+    "name": "Lat Pulldown",
+    "muscles": [
+      "back",
+      "shoulders",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Sandbag"
+    ],
+    "instructions": "Lat Pulldown targets the back, shoulders, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Sandbag or perform as bodyweight to scale the exercise.",
+    "level": "Expert"
+  },
+  {
+    "id": 123,
+    "type": "Muscle-Specific",
+    "name": "Pull-up",
+    "muscles": [
+      "back",
+      "glutes",
+      "calves"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "Pull-up: Start by setting up with proper form focusing on back, glutes, calves. Perform each rep with controlled tempo and breathe consistently. If using None, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 124,
+    "type": "Muscle-Specific",
+    "name": "Bent-over Row",
+    "muscles": [
+      "back",
+      "calves",
+      "chest"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "Bent-over Row targets the back, calves, chest. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Mat or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 125,
+    "type": "Muscle-Specific",
+    "name": "Inverted Row",
+    "muscles": [
+      "back",
+      "core",
+      "calves"
+    ],
+    "equipment": [
+      "Sandbag"
+    ],
+    "instructions": "Inverted Row targets the back, core, calves. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Sandbag or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 126,
+    "type": "Muscle-Specific",
+    "name": "Lat Pulldown",
+    "muscles": [
+      "back",
+      "core",
+      "quads"
+    ],
+    "equipment": [
+      "Sled"
+    ],
+    "instructions": "Lat Pulldown: Start by setting up with proper form focusing on back, core, quads. Perform each rep with controlled tempo and breathe consistently. If using Sled, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 127,
+    "type": "Muscle-Specific",
+    "name": "Bulgarian Split Squat",
+    "muscles": [
+      "legs",
+      "arms",
+      "shoulders"
+    ],
+    "equipment": [
+      "Sled"
+    ],
+    "instructions": "Bulgarian Split Squat targets the legs, arms, shoulders. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Sled or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 128,
+    "type": "Muscle-Specific",
+    "name": "Bulgarian Split Squat",
+    "muscles": [
+      "legs",
+      "core",
+      "quads"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "Bulgarian Split Squat targets the legs, core, quads. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Stability Ball or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 129,
+    "type": "Muscle-Specific",
+    "name": "Calf Raise",
+    "muscles": [
+      "legs",
+      "arms",
+      "core"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "Calf Raise: Start by setting up with proper form focusing on legs, arms, core. Perform each rep with controlled tempo and breathe consistently. If using Medicine Ball, ensure it's secure and adjust load for your level.",
+    "level": "Expert"
+  },
+  {
+    "id": 130,
+    "type": "Muscle-Specific",
+    "name": "Nordic Hamstring Curl",
+    "muscles": [
+      "legs",
+      "arms",
+      "glutes"
+    ],
+    "equipment": [
+      "Battle Ropes"
+    ],
+    "instructions": "Nordic Hamstring Curl targets the legs, arms, glutes. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Battle Ropes or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 131,
+    "type": "Muscle-Specific",
+    "name": "Step-up",
+    "muscles": [
+      "legs",
+      "arms",
+      "quads"
+    ],
+    "equipment": [
+      "Sandbag"
+    ],
+    "instructions": "Step-up targets the legs, arms, quads. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Sandbag or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 132,
+    "type": "Muscle-Specific",
+    "name": "Goblet Squat",
+    "muscles": [
+      "legs",
+      "back",
+      "core"
+    ],
+    "equipment": [
+      "Kettlebell"
+    ],
+    "instructions": "Goblet Squat targets the legs, back, core. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Kettlebell or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 133,
+    "type": "Muscle-Specific",
+    "name": "Romanian Deadlift",
+    "muscles": [
+      "legs",
+      "arms",
+      "quads"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "For Romanian Deadlift, maintain a neutral spine and engage legs, arms, quads throughout the movement. Use Barbell as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 134,
+    "type": "Muscle-Specific",
+    "name": "Nordic Hamstring Curl",
+    "muscles": [
+      "legs",
+      "arms",
+      "back"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "For Nordic Hamstring Curl, maintain a neutral spine and engage legs, arms, back throughout the movement. Use Medicine Ball as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 135,
+    "type": "Muscle-Specific",
+    "name": "Landmine Press",
+    "muscles": [
+      "shoulders",
+      "calves",
+      "core"
+    ],
+    "equipment": [
+      "None"
+    ],
+    "instructions": "Landmine Press targets the shoulders, calves, core. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use None or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 136,
+    "type": "Muscle-Specific",
+    "name": "Reverse Fly",
+    "muscles": [
+      "shoulders",
+      "glutes",
+      "arms"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "Reverse Fly targets the shoulders, glutes, arms. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 137,
+    "type": "Muscle-Specific",
+    "name": "Arnold Press",
+    "muscles": [
+      "shoulders",
+      "calves",
+      "back"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "Arnold Press: Start by setting up with proper form focusing on shoulders, calves, back. Perform each rep with controlled tempo and breathe consistently. If using Cable Machine, ensure it's secure and adjust load for your level.",
+    "level": "Beginner"
+  },
+  {
+    "id": 138,
+    "type": "Muscle-Specific",
+    "name": "Reverse Fly",
+    "muscles": [
+      "shoulders",
+      "arms",
+      "quads"
+    ],
+    "equipment": [
+      "Battle Ropes"
+    ],
+    "instructions": "Reverse Fly targets the shoulders, arms, quads. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Battle Ropes or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 139,
+    "type": "Muscle-Specific",
+    "name": "Lateral Raise",
+    "muscles": [
+      "shoulders",
+      "quads",
+      "back"
+    ],
+    "equipment": [
+      "Barbell"
+    ],
+    "instructions": "Lateral Raise targets the shoulders, quads, back. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 140,
+    "type": "Muscle-Specific",
+    "name": "Front Raise",
+    "muscles": [
+      "shoulders",
+      "calves",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Mat"
+    ],
+    "instructions": "For Front Raise, maintain a neutral spine and engage shoulders, calves, hamstrings throughout the movement. Use Mat as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 141,
+    "type": "Muscle-Specific",
+    "name": "Reverse Fly",
+    "muscles": [
+      "shoulders",
+      "chest",
+      "core"
+    ],
+    "equipment": [
+      "Stability Ball"
+    ],
+    "instructions": "Reverse Fly: Start by setting up with proper form focusing on shoulders, chest, core. Perform each rep with controlled tempo and breathe consistently. If using Stability Ball, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 142,
+    "type": "Muscle-Specific",
+    "name": "Arnold Press",
+    "muscles": [
+      "shoulders",
+      "calves",
+      "quads"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "For Arnold Press, maintain a neutral spine and engage shoulders, calves, quads throughout the movement. Use Cable Machine as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 143,
+    "type": "Muscle-Specific",
+    "name": "Concentration Curl",
+    "muscles": [
+      "arms",
+      "hamstrings",
+      "back"
+    ],
+    "equipment": [
+      "Plyo Box"
+    ],
+    "instructions": "For Concentration Curl, maintain a neutral spine and engage arms, hamstrings, back throughout the movement. Use Plyo Box as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Beginner"
+  },
+  {
+    "id": 144,
+    "type": "Muscle-Specific",
+    "name": "Overhead Tricep Extension",
+    "muscles": [
+      "arms",
+      "shoulders",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "Overhead Tricep Extension targets the arms, shoulders, hamstrings. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Cable Machine or perform as bodyweight to scale the exercise.",
+    "level": "Beginner"
+  },
+  {
+    "id": 145,
+    "type": "Muscle-Specific",
+    "name": "Cable Tricep Pushdown",
+    "muscles": [
+      "arms",
+      "hamstrings",
+      "chest"
+    ],
+    "equipment": [
+      "Dumbbells"
+    ],
+    "instructions": "For Cable Tricep Pushdown, maintain a neutral spine and engage arms, hamstrings, chest throughout the movement. Use Dumbbells as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 146,
+    "type": "Muscle-Specific",
+    "name": "Close Grip Bench Press",
+    "muscles": [
+      "arms",
+      "shoulders",
+      "back"
+    ],
+    "equipment": [
+      "Barbell",
+      "Squat Rack"
+    ],
+    "instructions": "Close Grip Bench Press targets the arms, shoulders, back. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Barbell, Squat Rack or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 147,
+    "type": "Muscle-Specific",
+    "name": "Tricep Dips",
+    "muscles": [
+      "arms",
+      "back",
+      "shoulders"
+    ],
+    "equipment": [
+      "Dumbbells"
+    ],
+    "instructions": "Tricep Dips targets the arms, back, shoulders. Execute with steady, deliberate reps, pausing briefly at peak contraction. Use Dumbbells or perform as bodyweight to scale the exercise.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 148,
+    "type": "Muscle-Specific",
+    "name": "Skull Crushers",
+    "muscles": [
+      "arms",
+      "quads",
+      "chest"
+    ],
+    "equipment": [
+      "Cable Machine"
+    ],
+    "instructions": "Skull Crushers: Start by setting up with proper form focusing on arms, quads, chest. Perform each rep with controlled tempo and breathe consistently. If using Cable Machine, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  },
+  {
+    "id": 149,
+    "type": "Muscle-Specific",
+    "name": "Tricep Dips",
+    "muscles": [
+      "arms",
+      "shoulders",
+      "hamstrings"
+    ],
+    "equipment": [
+      "Sled"
+    ],
+    "instructions": "For Tricep Dips, maintain a neutral spine and engage arms, shoulders, hamstrings throughout the movement. Use Sled as needed; progress by increasing reps or load gradually. Focus on form over speed.",
+    "level": "Expert"
+  },
+  {
+    "id": 150,
+    "type": "Muscle-Specific",
+    "name": "Concentration Curl",
+    "muscles": [
+      "arms",
+      "hamstrings",
+      "shoulders"
+    ],
+    "equipment": [
+      "Medicine Ball"
+    ],
+    "instructions": "Concentration Curl: Start by setting up with proper form focusing on arms, hamstrings, shoulders. Perform each rep with controlled tempo and breathe consistently. If using Medicine Ball, ensure it's secure and adjust load for your level.",
+    "level": "Intermediate"
+  }
+]
