@@ -4,3 +4,5 @@ python-dotenv
 flasgger
 flask-jwt-extended
 werkzeug
+gunicorn
+
