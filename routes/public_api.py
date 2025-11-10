@@ -22,68 +22,7 @@ def require_api_key(f):
 @public_bp.route('/workouts', methods=['GET'])
 @require_api_key
 def get_workouts():
-    """
-    Get all workouts or filter by type, muscle, level
-    ---
-    tags:
-      - Public API
-    security:
-      - ApiKeyAuth: []
-    parameters:
-      - in: query
-        name: type
-        schema:
-          type: string
-        description: Filter workouts by type (e.g., cardio, strength)
-      - in: query
-        name: muscle
-        schema:
-          type: string
-        description: Filter by target muscle group
-      - in: query
-        name: level
-        schema:
-          type: string
-        description: Filter by difficulty level
-    responses:
-      200:
-        description: List of workouts
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                count:
-                  type: integer
-                  description: Number of workouts returned
-                workouts:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      name:
-                        type: string
-                      equipment:
-                        type: string
-                      description:
-                        type: string
-      403:
-        description: Invalid or missing API key
-      500:
-        description: Database error
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                error:
-                  type: string
-                  example: database error
-                detail:
-                  type: string
-    """
+
     type_filter = request.args.get('type')
     muscle_filter = request.args.get('muscle')
     level_filter = request.args.get('level')
@@ -113,25 +52,4 @@ def get_workouts():
 @public_bp.route('/protected', methods=['GET'])
 @require_api_key
 def protected_resource():
-    """
-    Test protected API endpoint
-    ---
-    tags:
-      - Public API
-    security:
-      - ApiKeyAuth: []
-    responses:
-      200:
-        description: Successfully accessed protected endpoint
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                message:
-                  type: string
-                  example: this is a protected API!
-      403:
-        description: Invalid or missing API key
-    """
     return jsonify({'message':'this is a protected API!'}), 200
