@@ -19,7 +19,7 @@ def require_api_key(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@public_bp.route('/workouts', methods=['GET'])
+@public_bp.route('/public_api', methods=['GET'])
 @require_api_key
 def get_workouts():
 
