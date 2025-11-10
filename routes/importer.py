@@ -16,7 +16,7 @@ def import_workout():
     equipment = data.get('equipment', [])
     if not name:
         return jsonify({'error':'name required'}), 400
-    user_id = str(get_jwt_identity())
+    user_id = get_jwt_identity()
     eq_str = ','.join(equipment) if isinstance(equipment, list) else equipment
     with get_conn() as conn:
         with conn.cursor() as cur:
