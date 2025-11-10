@@ -30,7 +30,7 @@ def get_workouts():
     try:
         with psycopg.connect(DB_URL, autocommit=True) as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                query = "SELECT id, name, equipment, description FROM workouts WHERE 1=1"
+                query = "SELECT id, name, equipment, description FROM public_workouts WHERE 1=1"
                 params = []
                 if type_filter:
                     query += " AND LOWER(name) LIKE LOWER(%s)"
