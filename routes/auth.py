@@ -1,67 +1,140 @@
+import psycopg
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from db import get_conn
+from utils.generate_checklist import generate_checklist
 
-auth_bp = Blueprint('auth', __name__)
+workouts_bp = Blueprint('workouts', __name__)
 
-@auth_bp.route("/register", methods=["POST"])
-def register():
+@workouts_bp.route('/workouts', methods=['POST'])
+@jwt_required()
+def create_workout():
     data = request.get_json() or {}
-    username = data.get("username")
-    password = data.get("password")
-    name = data.get("name")
-    reg_number = data.get("reg_number")
-    email = data.get("email")
-
-    if not all([username, password, name, reg_number, email]):
-        return jsonify({"error": "All fields are required"}), 400
+    name = data.get('name')
+    if not name:
+        return jsonify({'error': 'name required'}), 400
+    description = data.get('description')
+    equipment = data.get('equipment', [])
+    user_id = str(get_jwt_identity())
+    eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
 
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT username, email, reg_number FROM users WHERE username=%s OR email=%s OR reg_number=%s",
-                (username, email, reg_number),
+                'INSERT INTO workouts (name, description, equipment, user_id) VALUES (%s,%s,%s,%s) RETURNING id',
+                (name, description, eq_str, user_id)
             )
-            existing = cur.fetchone()
-            if existing:
-                if existing[0] == username:
-                    return jsonify({"error": "Username already exists"}), 400
-                if existing[1] == email:
-                    return jsonify({"error": "Email already registered"}), 400
-                if existing[2] == reg_number:
-                    return jsonify({"error": "Registration number already exists"}), 400
+            wid = cur.fetchone()[0]
 
-            hashed_pw = generate_password_hash(password)
+            # Generate checklist items
+            items = generate_checklist(equipment)
+            for it in items:
+                cur.execute(
+                    'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
+                    (it['task'], it['done'], wid)
+                )
+
+    return jsonify({
+        'message': 'created',
+        'workout': {
+            'id': wid,
+            'name': name,
+            'description': description,
+            'equipment': equipment
+        }
+    }), 201
+
+
+@workouts_bp.route('/workouts', methods=['GET'])
+@jwt_required()
+def list_workouts():
+    user_id = str(get_jwt_identity())
+    with get_conn() as conn:
+        with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             cur.execute(
-                """
-                INSERT INTO users (username, password, name, reg_number, email)
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING id
-                """,
-                (username, hashed_pw, name, reg_number, email),
+                'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY created_at DESC',
+                (user_id,)
             )
-            uid = str(cur.fetchone()[0])  # Convert user ID to string
+            rows = cur.fetchall()
+            out = []
+            for r in rows:
+                eq = [e for e in (r['equipment'] or '').split(',') if e]
+                cur.execute('SELECT id, task, done FROM checklist_items WHERE workout_id=%s', (r['id'],))
+                checklist = [{'id': c[0], 'task': c[1], 'done': c[2]} for c in cur.fetchall()]
+                out.append({
+                    'id': r['id'],
+                    'name': r['name'],
+                    'description': r['description'],
+                    'equipment': eq,
+                    'checklist': checklist
+                })
 
-    return jsonify({'message': 'user registered', 'user_id': uid}), 201
+    return jsonify(out), 200
 
 
-@auth_bp.route("/login", methods=["POST"])
-def login():
+@workouts_bp.route('/workouts/<int:wid>', methods=['PUT'])
+@jwt_required()
+def update_workout(wid):
     data = request.get_json() or {}
-    username = data.get("username")
-    password = data.get("password")
-
-    if not username or not password:
-        return jsonify({'error': 'username and password required'}), 400
+    user_id = str(get_jwt_identity())
+    name = data.get('name')
+    description = data.get('description')
+    equipment = data.get('equipment')
 
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute('SELECT id, password FROM users WHERE username=%s', (username,))
+            cur.execute('SELECT user_id FROM workouts WHERE id=%s', (wid,))
             row = cur.fetchone()
-            if not row or not check_password_hash(row[1], password):
-                return jsonify({'error': 'invalid credentials'}), 401
-            uid = str(row[0])  # Convert user ID to string
+            if not row or str(row[0]) != user_id:
+                return jsonify({'error': 'not found or not allowed'}), 404
+            if name:
+                cur.execute('UPDATE workouts SET name=%s WHERE id=%s', (name, wid))
+            if description is not None:
+                cur.execute('UPDATE workouts SET description=%s WHERE id=%s', (description, wid))
+            if equipment is not None:
+                eq_str = ','.join(equipment) if isinstance(equipment, list) else equipment
+                cur.execute('UPDATE workouts SET equipment=%s WHERE id=%s', (eq_str, wid))
+                # Regenerate checklist
+                cur.execute('DELETE FROM checklist_items WHERE workout_id=%s', (wid,))
+                items = generate_checklist(equipment)
+                for it in items:
+                    cur.execute(
+                        'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
+                        (it['task'], it['done'], wid)
+                    )
 
-    token = create_access_token(identity=uid)  # Identity is now a string
-    return jsonify({'token': token}), 200
+    return jsonify({'message': 'updated'}), 200
+
+
+@workouts_bp.route('/workouts/<int:wid>', methods=['DELETE'])
+@jwt_required()
+def delete_workout(wid):
+    user_id = str(get_jwt_identity())
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT user_id FROM workouts WHERE id=%s', (wid,))
+            row = cur.fetchone()
+            if not row or str(row[0]) != user_id:
+                return jsonify({'error': 'not found or not allowed'}), 404
+            cur.execute('DELETE FROM workouts WHERE id=%s', (wid,))
+
+    return jsonify({'message': 'deleted'}), 200
+
+
+@workouts_bp.route('/checklist/<int:item_id>', methods=['PATCH'])
+@jwt_required()
+def toggle_checklist(item_id):
+    user_id = str(get_jwt_identity())
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                'SELECT ci.done, w.user_id FROM checklist_items ci JOIN workouts w ON ci.workout_id=w.id WHERE ci.id=%s',
+                (item_id,)
+            )
+            row = cur.fetchone()
+            if not row or str(row[1]) != user_id:
+                return jsonify({'error': 'not allowed'}), 403
+            new_done = not row[0]
+            cur.execute('UPDATE checklist_items SET done=%s WHERE id=%s', (new_done, item_id))
+
+    return jsonify({'message': 'toggled', 'done': new_done}), 200
