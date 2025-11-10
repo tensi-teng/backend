@@ -53,22 +53,16 @@ def create_workout():
 @jwt_required()
 def list_workouts():
     try:
-        # Get user identity from JWT
-        user_id = get_jwt_identity()
-        print("JWT Identity:", user_id, type(user_id))  # DEBUG
-        user_id = int(user_id)
-
+        user_id = int(get_jwt_identity())
         with get_conn() as conn:
-            # Main cursor for fetching workouts
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                query = 'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY id DESC'
-                print("Executing query:", query, "Params:", (user_id,))  # DEBUG
-                cur.execute(query, (user_id,))
+                cur.execute(
+                    'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY id DESC',
+                    (user_id,)
+                )
                 rows = cur.fetchall()
-                print("Rows fetched:", rows)  # DEBUG
 
             out = []
-            # Use a separate cursor for checklist queries
             with conn.cursor(row_factory=psycopg.rows.dict_row) as checklist_cur:
                 for r in rows:
                     eq = [e.strip() for e in (r['equipment'] or '').split(',') if e]
@@ -77,7 +71,6 @@ def list_workouts():
                         (r['id'],)
                     )
                     checklist = [{'id': c['id'], 'task': c['task'], 'done': c['done']} for c in checklist_cur.fetchall()]
-
                     out.append({
                         'id': r['id'],
                         'name': r['name'],
@@ -86,15 +79,11 @@ def list_workouts():
                         'checklist': checklist
                     })
 
-        print("Final output:", out)  # DEBUG
         return jsonify(out), 200
-
     except Exception as e:
         import traceback
-        print("❌ Error in list_workouts:", e)
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
-
 
 # ---------------- UPDATE USER WORKOUT ----------------
 @workouts_bp.route('/workouts/<int:wid>', methods=['PUT'])
@@ -164,33 +153,30 @@ def toggle_checklist(item_id):
                 row = cur.fetchone()
                 if not row or row[1] != user_id:
                     return jsonify({'error': 'not allowed'}), 403
-
                 new_done = not row[0]
                 cur.execute('UPDATE checklist_items SET done=%s WHERE id=%s', (new_done, item_id))
-
         return jsonify({'message': 'toggled', 'done': new_done}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ---------------- SAVE PUBLIC WORKOUT ----------------
+# ---------------- PUBLIC WORKOUTS ----------------
 @workouts_bp.route('/public_workouts', methods=['GET'])
-@jwt_required(optional=True) 
+@jwt_required(optional=True)
 def list_public_workouts():
     try:
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute(
-                    'SELECT id, name, description, equipment, type, muscles, level '
-                    'FROM public_workouts ORDER BY id DESC'
+                    'SELECT id, name, equipment, type, muscles, level FROM public_workouts ORDER BY id DESC'
                 )
                 workouts = cur.fetchall() or []
         return jsonify(workouts), 200
     except Exception as e:
         import traceback
-        print("❌ Error in list_public_workouts:", e)
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+# ---------------- SAVE PUBLIC WORKOUT ----------------
 @workouts_bp.route('/public_workouts/save/<int:workout_id>', methods=['POST'])
 @jwt_required()
 def save_public_workout(workout_id):
@@ -209,8 +195,10 @@ def save_public_workout(workout_id):
                     return jsonify({"error": "Public workout not found"}), 404
 
                 # Check duplicate
-                cur.execute('SELECT id FROM saved_workouts WHERE user_id=%s AND public_workout_id=%s',
-                            (user_id, workout_id))
+                cur.execute(
+                    'SELECT id FROM saved_workouts WHERE user_id=%s AND public_workout_id=%s',
+                    (user_id, workout_id)
+                )
                 if cur.fetchone():
                     return jsonify({"error": "Workout already saved"}), 409
 
@@ -218,18 +206,20 @@ def save_public_workout(workout_id):
                 cur.execute(
                     'INSERT INTO saved_workouts '
                     '(user_id, public_workout_id, name, equipment, type, muscles, level) '
-                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id',
-                    (user_id, workout_id, custom_name, workout[1], workout[2], workout[3], workout[4], workout[5])
+                    'VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id',
+                    (user_id, workout_id, custom_name, workout[1], workout[2], workout[3], workout[4])
                 )
                 saved_id = cur.fetchone()[0]
 
-                # Generate checklist if equipment exists
-                equipment_list = [e.strip() for e in (workout[2] or '').split(',')]
+                # Generate checklist
+                equipment_list = [e.strip() for e in (workout[1] or '').split(',') if e]
                 if equipment_list:
                     checklist = generate_checklist(equipment_list)
                     for item in checklist:
-                        cur.execute('INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
-                                    (item['task'], False, saved_id))
+                        cur.execute(
+                            'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
+                            (item['task'], False, saved_id)
+                        )
 
         return jsonify({"message": "saved", "id": saved_id}), 201
     except Exception as e:
@@ -249,11 +239,9 @@ def list_saved_workouts():
                     (user_id,)
                 )
                 workouts = cur.fetchall()
-
                 for w in workouts:
                     cur.execute('SELECT id, task, done FROM checklist_items WHERE workout_id=%s', (w['id'],))
                     w['checklist'] = [{'id': c[0], 'task': c[1], 'done': c[2]} for c in cur.fetchall()]
-
         return jsonify(workouts), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -269,7 +257,7 @@ def update_saved_workout(workout_id):
         with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    'SELECT id FROM saved_workouts WHERE id=%s AND user_id=%s', 
+                    'SELECT id FROM saved_workouts WHERE id=%s AND user_id=%s',
                     (workout_id, user_id)
                 )
                 if not cur.fetchone():
@@ -277,14 +265,13 @@ def update_saved_workout(workout_id):
 
                 if 'name' in data:
                     cur.execute(
-                        'UPDATE saved_workouts SET name=%s WHERE id=%s', 
+                        'UPDATE saved_workouts SET name=%s WHERE id=%s',
                         (data['name'], workout_id)
                     )
 
         return jsonify({"message": "updated"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # ---------------- DELETE SAVED WORKOUT ----------------
 @workouts_bp.route('/saved/<int:workout_id>', methods=['DELETE'])
@@ -294,8 +281,10 @@ def delete_saved_workout(workout_id):
         user_id = int(get_jwt_identity())
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute('DELETE FROM saved_workouts WHERE id=%s AND user_id=%s RETURNING id',
-                            (workout_id, user_id))
+                cur.execute(
+                    'DELETE FROM saved_workouts WHERE id=%s AND user_id=%s RETURNING id',
+                    (workout_id, user_id)
+                )
                 if not cur.fetchone():
                     return jsonify({"error": "Workout not found"}), 404
         return jsonify({"message": "deleted"}), 200
@@ -318,10 +307,8 @@ def toggle_saved_checklist(item_id):
                 row = cur.fetchone()
                 if not row or row[1] != user_id:
                     return jsonify({"error": "not allowed"}), 403
-
                 new_done = not row[0]
                 cur.execute('UPDATE checklist_items SET done=%s WHERE id=%s', (new_done, item_id))
-
         return jsonify({"message": "toggled", "done": new_done}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
