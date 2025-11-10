@@ -268,18 +268,23 @@ def update_saved_workout(workout_id):
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute('SELECT id FROM saved_workouts WHERE id=%s AND user_id=%s', (workout_id, user_id))
+                cur.execute(
+                    'SELECT id FROM saved_workouts WHERE id=%s AND user_id=%s', 
+                    (workout_id, user_id)
+                )
                 if not cur.fetchone():
                     return jsonify({"error": "Workout not found"}), 404
 
                 if 'name' in data:
-                    cur.execute('UPDATE saved_workouts SET name=%s WHERE id=%s', (data['name'], workout_id))
-                if 'description' in data:
-                    cur.execute('UPDATE saved_workouts SET description=%s WHERE id=%s', (data['description'], workout_id))
+                    cur.execute(
+                        'UPDATE saved_workouts SET name=%s WHERE id=%s', 
+                        (data['name'], workout_id)
+                    )
 
         return jsonify({"message": "updated"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # ---------------- DELETE SAVED WORKOUT ----------------
 @workouts_bp.route('/saved/<int:workout_id>', methods=['DELETE'])
