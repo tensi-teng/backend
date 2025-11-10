@@ -53,16 +53,20 @@ def create_workout():
 @jwt_required()
 def list_workouts():
     try:
-        user_id = int(get_jwt_identity())
+        user_id = get_jwt_identity()
+        print("JWT Identity:", user_id, type(user_id))  # DEBUG
+
+        user_id = int(user_id)
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                cur.execute(
-                    'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY id DESC',
-                    (user_id,)
-                )
-                rows = cur.fetchall()
-                out = []
+                query = 'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY id DESC'
+                print("Executing query:", query, "Params:", (user_id,))  # DEBUG
 
+                cur.execute(query, (user_id,))
+                rows = cur.fetchall()
+                print("Rows fetched:", rows)  # DEBUG
+
+                out = []
                 for r in rows:
                     eq = [e for e in (r['equipment'] or '').split(',') if e]
                     cur.execute('SELECT id, task, done FROM checklist_items WHERE workout_id=%s', (r['id'],))
@@ -77,6 +81,7 @@ def list_workouts():
 
         return jsonify(out), 200
     except Exception as e:
+        print("❌ Error in list_workouts:", e)
         return jsonify({'error': str(e)}), 500
 
 # ---------------- UPDATE USER WORKOUT ----------------
