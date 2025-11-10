@@ -156,7 +156,7 @@ def toggle_checklist(item_id):
         return jsonify({'error': str(e)}), 500
 
 # ---------------- SAVE PUBLIC WORKOUT ----------------
-@saved_workouts_bp.route('/public/save/<int:workout_id>', methods=['POST'])
+@workouts_bp.route('/public/save/<int:workout_id>', methods=['POST'])
 @jwt_required()
 def save_public_workout(workout_id):
     try:
@@ -201,7 +201,7 @@ def save_public_workout(workout_id):
         return jsonify({"error": str(e)}), 500
 
 # ---------------- LIST SAVED WORKOUTS ----------------
-@saved_workouts_bp.route('/saved', methods=['GET'])
+@workouts_bp.route('/saved', methods=['GET'])
 @jwt_required()
 def list_saved_workouts():
     try:
@@ -224,7 +224,7 @@ def list_saved_workouts():
         return jsonify({"error": str(e)}), 500
 
 # ---------------- UPDATE SAVED WORKOUT ----------------
-@saved_workouts_bp.route('/saved/<int:workout_id>', methods=['PUT'])
+@workouts_bp.route('/saved/<int:workout_id>', methods=['PUT'])
 @jwt_required()
 def update_saved_workout(workout_id):
     try:
@@ -247,7 +247,7 @@ def update_saved_workout(workout_id):
         return jsonify({"error": str(e)}), 500
 
 # ---------------- DELETE SAVED WORKOUT ----------------
-@saved_workouts_bp.route('/saved/<int:workout_id>', methods=['DELETE'])
+@workouts_bp.route('/saved/<int:workout_id>', methods=['DELETE'])
 @jwt_required()
 def delete_saved_workout(workout_id):
     try:
@@ -263,7 +263,7 @@ def delete_saved_workout(workout_id):
         return jsonify({"error": str(e)}), 500
 
 # ---------------- TOGGLE CHECKLIST FOR SAVED WORKOUT ----------------
-@saved_workouts_bp.route('/checklist/<int:item_id>', methods=['PATCH'])
+@workouts_bp.route('/checklist/<int:item_id>', methods=['PATCH'])
 @jwt_required()
 def toggle_saved_checklist(item_id):
     try:

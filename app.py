@@ -67,13 +67,11 @@ from routes.workouts import workouts_bp
 from routes.public_api import public_bp
 from routes.importer import import_bp
 from routes.gestures import gestures_bp
-from routes.saved_workouts import saved_workouts_bp
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(workouts_bp, url_prefix='')
 app.register_blueprint(public_bp, url_prefix='/api')
-app.register_blueprint(saved_workouts_bp, url_prefix='')
 app.register_blueprint(import_bp, url_prefix='')
 app.register_blueprint(gestures_bp, url_prefix='')
 
