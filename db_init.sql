@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS checklist_items;
 DROP TABLE IF EXISTS workouts;
 DROP TABLE IF EXISTS users;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(80) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
@@ -13,24 +13,23 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE workouts (
+CREATE TABLE IF NOT EXISTS workouts (
     id SERIAL PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
     description TEXT,
     equipment TEXT,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    geotag_id INTEGER REFERENCES geotags(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE checklist_items (
+CREATE TABLE IF NOT EXISTS checklist_items (
     id SERIAL PRIMARY KEY,
     task VARCHAR(255) NOT NULL,
     done BOOLEAN DEFAULT FALSE,
     workout_id INTEGER REFERENCES workouts(id) ON DELETE CASCADE
 );
 
-CREATE TABLE gestures (
+CREATE TABLE IF NOT EXISTS gestures (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
     action VARCHAR(200),
@@ -38,7 +37,7 @@ CREATE TABLE gestures (
 );
 
 -- Table for saved public workouts
-CREATE TABLE saved_workouts (
+CREATE TABLE IF NOT EXISTS saved_workouts (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     public_workout_id INTEGER REFERENCES public_workouts(id),
@@ -53,7 +52,7 @@ CREATE TABLE saved_workouts (
 );
 
 -- Public API table
-CREATE TABLE public_workouts (
+CREATE TABLE IF NOT EXISTS public_workouts (
     id SERIAL PRIMARY KEY,
     type VARCHAR(50),
     name VARCHAR(100),

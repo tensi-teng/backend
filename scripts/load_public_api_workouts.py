@@ -10,7 +10,6 @@ if not DB_URL:
 
 with psycopg.connect(DB_URL, autocommit=True) as conn:
     with conn.cursor() as cur:
-        # Drop and create public_workouts table (if you want to reset)
         cur.execute("""
         DROP TABLE IF EXISTS public_workouts;
         CREATE TABLE public_workouts (
