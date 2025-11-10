@@ -18,9 +18,8 @@ def create_workout():
 
         description = data.get('description', '')
         equipment = data.get('equipment', [])
-        user_id = int(get_jwt_identity())
+        user_id = int(get_jwt_identity())  # Ensure integer
 
-        # Convert equipment list to string for DB
         eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
 
         with get_conn() as conn:
@@ -31,7 +30,7 @@ def create_workout():
                 )
                 wid = cur.fetchone()[0]
 
-                # Generate checklist items
+                # Generate checklist safely
                 items = generate_checklist(equipment if isinstance(equipment, list) else [])
                 for it in items:
                     cur.execute(
@@ -52,7 +51,6 @@ def create_workout():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 # ---------------- LIST WORKOUTS ----------------
 @workouts_bp.route('/workouts', methods=['GET'])
 @jwt_required()
@@ -61,7 +59,6 @@ def list_workouts():
         user_id = int(get_jwt_identity())
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                # Use id DESC if created_at doesn't exist
                 cur.execute(
                     'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY id DESC',
                     (user_id,)
@@ -71,7 +68,10 @@ def list_workouts():
 
                 for r in rows:
                     eq = [e for e in (r['equipment'] or '').split(',') if e]
-                    cur.execute('SELECT id, task, done FROM checklist_items WHERE workout_id=%s', (r['id'],))
+                    cur.execute(
+                        'SELECT id, task, done FROM checklist_items WHERE workout_id=%s',
+                        (r['id'],)
+                    )
                     checklist = [{'id': c[0], 'task': c[1], 'done': c[2]} for c in cur.fetchall()]
 
                     out.append({
@@ -86,7 +86,6 @@ def list_workouts():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 # ---------------- UPDATE WORKOUT ----------------
 @workouts_bp.route('/workouts/<int:wid>', methods=['PUT'])
@@ -104,10 +103,9 @@ def update_workout(wid):
                 # Ensure the workout belongs to the user
                 cur.execute('SELECT user_id FROM workouts WHERE id=%s', (wid,))
                 row = cur.fetchone()
-                if not row or row[0] != user_id:
+                if not row or int(row[0]) != user_id:
                     return jsonify({'error': 'not found or not allowed'}), 404
 
-                # Update fields if provided
                 if name:
                     cur.execute('UPDATE workouts SET name=%s WHERE id=%s', (name, wid))
                 if description is not None:
@@ -116,7 +114,7 @@ def update_workout(wid):
                     eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
                     cur.execute('UPDATE workouts SET equipment=%s WHERE id=%s', (eq_str, wid))
 
-                    # Regenerate checklist
+                    # Regenerate checklist safely
                     cur.execute('DELETE FROM checklist_items WHERE workout_id=%s', (wid,))
                     items = generate_checklist(equipment if isinstance(equipment, list) else [])
                     for it in items:
@@ -130,7 +128,6 @@ def update_workout(wid):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 # ---------------- DELETE WORKOUT ----------------
 @workouts_bp.route('/workouts/<int:wid>', methods=['DELETE'])
 @jwt_required()
@@ -141,13 +138,12 @@ def delete_workout(wid):
             with conn.cursor() as cur:
                 cur.execute('SELECT user_id FROM workouts WHERE id=%s', (wid,))
                 row = cur.fetchone()
-                if not row or row[0] != user_id:
+                if not row or int(row[0]) != user_id:
                     return jsonify({'error': 'not found or not allowed'}), 404
                 cur.execute('DELETE FROM workouts WHERE id=%s', (wid,))
         return jsonify({'message': 'deleted'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 # ---------------- TOGGLE CHECKLIST ITEM ----------------
 @workouts_bp.route('/checklist/<int:item_id>', methods=['PATCH'])
@@ -163,7 +159,7 @@ def toggle_checklist(item_id):
                     (item_id,)
                 )
                 row = cur.fetchone()
-                if not row or row[1] != user_id:
+                if not row or int(row[1]) != user_id:
                     return jsonify({'error': 'not allowed'}), 403
 
                 new_done = not row[0]
