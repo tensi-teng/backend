@@ -156,6 +156,24 @@ def toggle_checklist(item_id):
         return jsonify({'error': str(e)}), 500
 
 # ---------------- SAVE PUBLIC WORKOUT ----------------
+@workouts_bp.route('/public', methods=['GET'])
+@jwt_required(optional=True) 
+def list_public_workouts():
+    try:
+        with get_conn() as conn:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
+                cur.execute(
+                    'SELECT id, name, description, equipment, type, muscles, level '
+                    'FROM public_workouts ORDER BY id DESC'
+                )
+                workouts = cur.fetchall() or []
+        return jsonify(workouts), 200
+    except Exception as e:
+        import traceback
+        print("❌ Error in list_public_workouts:", e)
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
 @workouts_bp.route('/public/save/<int:workout_id>', methods=['POST'])
 @jwt_required()
 def save_public_workout(workout_id):
