@@ -15,7 +15,7 @@ def create_workout():
         return jsonify({'error':'name required'}), 400
     description = data.get('description')
     equipment = data.get('equipment', [])
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
 
     with get_conn() as conn:
