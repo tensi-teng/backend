@@ -201,7 +201,7 @@ def save_public_workout(workout_id):
         with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    'SELECT name, description, equipment, type, muscles, level FROM public_workouts WHERE id=%s',
+                    'SELECT name, equipment, type, muscles, level FROM public_workouts WHERE id=%s',
                     (workout_id,)
                 )
                 workout = cur.fetchone()
@@ -217,7 +217,7 @@ def save_public_workout(workout_id):
                 custom_name = data.get('name', workout[0])
                 cur.execute(
                     'INSERT INTO saved_workouts '
-                    '(user_id, public_workout_id, name, description, equipment, type, muscles, level) '
+                    '(user_id, public_workout_id, name, equipment, type, muscles, level) '
                     'VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id',
                     (user_id, workout_id, custom_name, workout[1], workout[2], workout[3], workout[4], workout[5])
                 )
@@ -244,7 +244,7 @@ def list_saved_workouts():
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute(
-                    'SELECT id, name, description, equipment, type, muscles, level '
+                    'SELECT id, name, equipment, type, muscles, level '
                     'FROM saved_workouts WHERE user_id=%s ORDER BY created_at DESC',
                     (user_id,)
                 )
