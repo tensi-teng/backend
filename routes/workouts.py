@@ -312,3 +312,39 @@ def toggle_saved_checklist(item_id):
         return jsonify({"message": "toggled", "done": new_done}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+# ---------------- LIST ALL CHECKLIST ITEMS FOR USER ----------------
+@workouts_bp.route('/checklist', methods=['GET'])
+@jwt_required()
+def list_checklist_items():
+    try:
+        user_id = int(get_jwt_identity())
+        with get_conn() as conn:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
+                # Get checklist items from user workouts
+                cur.execute(
+                    'SELECT ci.id, ci.task, ci.done, ci.workout_id, w.name AS workout_name '
+                    'FROM checklist_items ci '
+                    'JOIN workouts w ON ci.workout_id=w.id '
+                    'WHERE w.user_id=%s',
+                    (user_id,)
+                )
+                user_workout_items = cur.fetchall()
+
+                # Get checklist items from saved public workouts
+                cur.execute(
+                    'SELECT ci.id, ci.task, ci.done, ci.workout_id, sw.name AS workout_name '
+                    'FROM checklist_items ci '
+                    'JOIN saved_workouts sw ON ci.workout_id=sw.id '
+                    'WHERE sw.user_id=%s',
+                    (user_id,)
+                )
+                saved_workout_items = cur.fetchall()
+
+        # Combine both lists
+        all_items = user_workout_items + saved_workout_items
+
+        return jsonify(all_items), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
