@@ -1,6 +1,8 @@
+DROP TABLE IF EXISTS saved_workouts;
 DROP TABLE IF EXISTS gestures;
 DROP TABLE IF EXISTS checklist_items;
 DROP TABLE IF EXISTS workouts;
+DROP TABLE IF EXISTS public_workouts;
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -11,6 +13,17 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(120) UNIQUE NOT NULL,
     password VARCHAR(200) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Public API table
+CREATE TABLE IF NOT EXISTS public_workouts (
+    id SERIAL PRIMARY KEY,
+    type VARCHAR(50),
+    name VARCHAR(100),
+    muscles TEXT[],
+    equipment TEXT,
+    instructions TEXT,
+    level VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS workouts (
@@ -50,15 +63,3 @@ CREATE TABLE IF NOT EXISTS saved_workouts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, public_workout_id)
 );
-
--- Public API table
-CREATE TABLE IF NOT EXISTS public_workouts (
-    id SERIAL PRIMARY KEY,
-    type VARCHAR(50),
-    name VARCHAR(100),
-    muscles TEXT[],
-    equipment TEXT,
-    instructions TEXT,
-    level VARCHAR(20)
-);
-
