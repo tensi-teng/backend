@@ -53,24 +53,31 @@ def create_workout():
 @jwt_required()
 def list_workouts():
     try:
+        # Get user identity from JWT
         user_id = get_jwt_identity()
         print("JWT Identity:", user_id, type(user_id))  # DEBUG
-
         user_id = int(user_id)
+
         with get_conn() as conn:
+            # Main cursor for fetching workouts
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 query = 'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY id DESC'
                 print("Executing query:", query, "Params:", (user_id,))  # DEBUG
-
                 cur.execute(query, (user_id,))
                 rows = cur.fetchall()
                 print("Rows fetched:", rows)  # DEBUG
 
-                out = []
+            out = []
+            # Use a separate cursor for checklist queries
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as checklist_cur:
                 for r in rows:
-                    eq = [e for e in (r['equipment'] or '').split(',') if e]
-                    cur.execute('SELECT id, task, done FROM checklist_items WHERE workout_id=%s', (r['id'],))
-                    checklist = [{'id': c[0], 'task': c[1], 'done': c[2]} for c in cur.fetchall()]
+                    eq = [e.strip() for e in (r['equipment'] or '').split(',') if e]
+                    checklist_cur.execute(
+                        'SELECT id, task, done FROM checklist_items WHERE workout_id=%s', 
+                        (r['id'],)
+                    )
+                    checklist = [{'id': c['id'], 'task': c['task'], 'done': c['done']} for c in checklist_cur.fetchall()]
+
                     out.append({
                         'id': r['id'],
                         'name': r['name'],
@@ -79,10 +86,15 @@ def list_workouts():
                         'checklist': checklist
                     })
 
+        print("Final output:", out)  # DEBUG
         return jsonify(out), 200
+
     except Exception as e:
+        import traceback
         print("❌ Error in list_workouts:", e)
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
 
 # ---------------- UPDATE USER WORKOUT ----------------
 @workouts_bp.route('/workouts/<int:wid>', methods=['PUT'])
