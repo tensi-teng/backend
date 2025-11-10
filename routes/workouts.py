@@ -156,7 +156,7 @@ def toggle_checklist(item_id):
         return jsonify({'error': str(e)}), 500
 
 # ---------------- SAVE PUBLIC WORKOUT ----------------
-@workouts_bp.route('/public', methods=['GET'])
+@workouts_bp.route('/public_workouts', methods=['GET'])
 @jwt_required(optional=True) 
 def list_public_workouts():
     try:
@@ -174,7 +174,7 @@ def list_public_workouts():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
-@workouts_bp.route('/public/save/<int:workout_id>', methods=['POST'])
+@workouts_bp.route('/public_workouts/save/<int:workout_id>', methods=['POST'])
 @jwt_required()
 def save_public_workout(workout_id):
     try:
