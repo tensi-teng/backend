@@ -51,7 +51,7 @@ def save_public_workout(workout_id):
       409:
         description: Workout already saved by user
     """
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     data = request.get_json() or {}
     
     with get_conn() as conn:
@@ -148,7 +148,7 @@ def list_saved_workouts():
                         done:
                           type: boolean
     """
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     
     with get_conn() as conn:
         with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
@@ -213,7 +213,7 @@ def update_saved_workout(workout_id):
       404:
         description: Workout not found or not owned by user
     """
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     data = request.get_json() or {}
     
     with get_conn() as conn:
@@ -271,7 +271,7 @@ def delete_saved_workout(workout_id):
       404:
         description: Workout not found or not owned by user
     """
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     
     with get_conn() as conn:
         with conn.cursor() as cur:

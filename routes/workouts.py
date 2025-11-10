@@ -40,7 +40,7 @@ def create_workout():
 @workouts_bp.route('/workouts', methods=['GET'])
 @jwt_required()
 def list_workouts():
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     with get_conn() as conn:
         with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
             cur.execute(
@@ -62,7 +62,7 @@ def list_workouts():
 @jwt_required()
 def update_workout(wid):
     data = request.get_json() or {}
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     name = data.get('name')
     description = data.get('description')
     equipment = data.get('equipment')
@@ -90,7 +90,7 @@ def update_workout(wid):
 @workouts_bp.route('/workouts/<int:wid>', methods=['DELETE'])
 @jwt_required()
 def delete_workout(wid):
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('SELECT user_id FROM workouts WHERE id=%s', (wid,))
@@ -105,7 +105,7 @@ def delete_workout(wid):
 @workouts_bp.route('/checklist/<int:item_id>', methods=['PATCH'])
 @jwt_required()
 def toggle_checklist(item_id):
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(

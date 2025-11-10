@@ -10,7 +10,7 @@ gestures_bp = Blueprint('gestures', __name__)
 def set_gestures():
     data = request.get_json() or {}
     mappings = data.get('mappings', [])
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('DELETE FROM gestures WHERE user_id=%s', (user_id,))
@@ -21,7 +21,7 @@ def set_gestures():
 @gestures_bp.route('/gestures', methods=['GET'])
 @jwt_required()
 def get_gestures():
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('SELECT id, name, action FROM gestures WHERE user_id=%s', (user_id,))
