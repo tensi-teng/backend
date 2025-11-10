@@ -7,61 +7,6 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    """
-          tags:
-            - Auth
-          summary: Register a new user account
-          description: Register a new user with username, password, name, registration number, and email.
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  type: object
-                  required:
-                    - username
-                    - password
-                    - name
-                    - reg_number
-                    - email
-                  properties:
-                    username:
-                      type: string
-                      example: john_doe123
-                      description: Enter a unique username
-                    password:
-                      type: string
-                      format: password
-                      example: SecurePass123!
-                      description: Choose a strong password
-                    name:
-                      type: string
-                      example: John Michael Doe
-                      description: Full name of the user
-                    reg_number:
-                      type: string
-                      example: REG2025-001
-                      description: Registration number for verification
-                    email:
-                      type: string
-                      format: email
-                      example: john.doe@example.com
-                      description: Valid email address for the account
-          responses:
-            '201':
-              description: User registered successfully
-              content:
-                application/json:
-                  example:
-                    message: user registered
-                    user_id: 42
-            '400':
-              description: Bad request (missing or duplicate fields)
-              content:
-                application/json:
-                  example:
-                    error: All fields are required
-    """
     data = request.get_json() or {}
     username = data.get("username")
     password = data.get("password")
@@ -96,57 +41,13 @@ def register():
                 """,
                 (username, hashed_pw, name, reg_number, email),
             )
-            uid = cur.fetchone()[0]
+            uid = str(cur.fetchone()[0])  # Convert user ID to string
 
     return jsonify({'message': 'user registered', 'user_id': uid}), 201
 
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    """
-          tags:
-            - Auth
-          summary: Login to get JWT token
-          description: Authenticate user and receive a JWT token to access protected endpoints.
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  type: object
-                  required:
-                    - username
-                    - password
-                  properties:
-                    username:
-                      type: string
-                      example: john_doe123
-                      description: Enter your registered username
-                    password:
-                      type: string
-                      format: password
-                      example: SecurePass123!
-                      description: Enter your account password
-          responses:
-            '200':
-              description: Login successful
-              content:
-                application/json:
-                  example:
-                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-            '400':
-              description: Missing username or password
-              content:
-                application/json:
-                  example:
-                    error: username and password required
-            '401':
-              description: Invalid credentials
-              content:
-                application/json:
-                  example:
-                    error: invalid credentials
-    """
     data = request.get_json() or {}
     username = data.get("username")
     password = data.get("password")
@@ -160,7 +61,7 @@ def login():
             row = cur.fetchone()
             if not row or not check_password_hash(row[1], password):
                 return jsonify({'error': 'invalid credentials'}), 401
-            uid = row[0]
+            uid = str(row[0])  # Convert user ID to string
 
-    token = create_access_token(identity=uid)
+    token = create_access_token(identity=uid)  # Identity is now a string
     return jsonify({'token': token}), 200
