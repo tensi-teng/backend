@@ -3,10 +3,11 @@ import json
 import psycopg
 from dotenv import load_dotenv
 
-# ---------------- ENV SETUP ----------------
+# ----------------------
+# ENV SETUP
+# ----------------------
 load_dotenv()
 DB_URL = os.getenv('DATABASE_URL')
-
 if not DB_URL:
     raise RuntimeError('DATABASE_URL environment variable is not set')
 
@@ -16,7 +17,9 @@ masked = f"{parts[0].split('://')[0]}://*****@{parts[1]}" if len(parts) > 1 else
 print(f"\nDATABASE_URL: {masked}")
 print("\n=== INITIALIZING DATABASE ===")
 
-# ---------------- LOAD SCHEMA ----------------
+
+# LOAD SCHEMA
+
 try:
     with open('db_init.sql', 'r') as file:
         init_sql = file.read()
@@ -25,7 +28,9 @@ except FileNotFoundError:
     print("✗ db_init.sql not found. Please make sure it’s in the same directory.")
     raise
 
-# ---------------- CONNECT & INITIALIZE ----------------
+
+# CONNECT & INITIALIZE
+
 try:
     with psycopg.connect(DB_URL, autocommit=True) as conn:
         with conn.cursor() as cur:
@@ -35,23 +40,10 @@ try:
             cur.execute(init_sql)
             print("✓ Tables created successfully!")
 
-            # ---------------- LOAD PUBLIC WORKOUTS ----------------
+           
+            # LOAD PUBLIC WORKOUTS
+         
             print("\n=== LOADING PUBLIC WORKOUTS ===")
-
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS public_workouts (
-                    id SERIAL PRIMARY KEY,
-                    type VARCHAR(100),
-                    name VARCHAR(255),
-                    muscles VARCHAR(255),
-                    equipment TEXT,
-                    instructions TEXT,
-                    level VARCHAR(50),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            """)
-            print("✓ Table 'public_workouts' ensured.")
-
             try:
                 with open('workouts.json', 'r') as f:
                     workouts = json.load(f)
@@ -76,6 +68,10 @@ try:
                         equipment_list = [equipment_list]
                     equipment_str = ','.join(equipment_list)
 
+                    muscles = w.get('muscles') or []
+                    if not isinstance(muscles, list):
+                        muscles = [muscles]
+
                     cur.execute("""
                         INSERT INTO public_workouts
                         (type, name, muscles, equipment, instructions, level)
@@ -83,7 +79,7 @@ try:
                     """, (
                         w.get('type'),
                         w.get('name'),
-                        w.get('muscles'),
+                        muscles,           # Stored as TEXT[] in Postgres
                         equipment_str,
                         w.get('instructions'),
                         w.get('level')
@@ -100,4 +96,3 @@ except psycopg.Error as e:
 except Exception as e:
     print(f"✗ Unexpected error: {e}")
     raise
-

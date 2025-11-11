@@ -1,28 +1,22 @@
-
-from functools import wraps
 from flask import Blueprint, jsonify, request, current_app
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 import psycopg
 import os
-from dotenv import load_dotenv
-load_dotenv()
 
 public_bp = Blueprint('public_api', __name__)
-API_KEY = os.getenv('API_KEY')
 DB_URL = os.getenv('DATABASE_URL')
 
-def require_api_key(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        api_key = request.headers.get('X-API-KEY')
-        if api_key != API_KEY:
-            return jsonify({'error':'you need a valid api key'}), 403
-        return f(*args, **kwargs)
-    return decorated_function
-
-@public_bp.route('/public_workouts', methods=['GET'])
-@require_api_key
+@public_bp.route('/workouts', methods=['GET'])
 def get_workouts():
+    # Optional JWT handling
+    user_id = None
+    try:
+        verify_jwt_in_request()
+        user_id = get_jwt_identity()
+    except Exception:
+        user_id = None 
 
+    # Filters from query params
     type_filter = request.args.get('type')
     muscle_filter = request.args.get('muscle')
     level_filter = request.args.get('level')
@@ -33,13 +27,13 @@ def get_workouts():
                 query = "SELECT id, name, equipment, type, muscles, level, instructions FROM public_workouts WHERE 1=1"
                 params = []
                 if type_filter:
-                    query += " AND LOWER(name) LIKE LOWER(%s)"
+                    query += " AND LOWER(type) LIKE LOWER(%s)"
                     params.append(f"%{type_filter}%")
                 if muscle_filter:
-                    query += " AND LOWER(description) LIKE LOWER(%s)"
+                    query += " AND LOWER(muscles) LIKE LOWER(%s)"
                     params.append(f"%{muscle_filter}%")
                 if level_filter:
-                    query += " AND LOWER(description) LIKE LOWER(%s)"
+                    query += " AND LOWER(level) LIKE LOWER(%s)"
                     params.append(f"%{level_filter}%")
                 cur.execute(query, params)
                 rows = cur.fetchall()
@@ -47,9 +41,9 @@ def get_workouts():
     except psycopg.Error as e:
         current_app.logger.exception('Database error while fetching workouts')
         return jsonify({'error':'database error','detail': str(e)}), 500
-    return jsonify({'count': len(workouts), 'workouts': workouts}), 200
 
-@public_bp.route('/protected', methods=['GET'])
-@require_api_key
-def protected_resource():
-    return jsonify({'message':'this is a protected API!'}), 200
+    return jsonify({
+        'user_id': user_id, 
+        'count': len(workouts),
+        'workouts': workouts
+    }), 200
