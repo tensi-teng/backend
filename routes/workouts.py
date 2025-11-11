@@ -154,6 +154,77 @@ def update_workout(source, wid):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# ---------------- SAVE PUBLIC WORKOUT ----------------
+@workouts_bp.route('/workouts/save/<int:public_workout_id>', methods=['POST'])
+@jwt_required()
+def save_public_workout(public_workout_id):
+    try:
+        user_id = int(get_jwt_identity())
+        data = request.get_json() or {}
+
+        # Optional overrides
+        custom_name = data.get('name')
+        custom_description = data.get('description')
+        custom_equipment = data.get('equipment')
+
+        with get_conn() as conn:
+            with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
+                # Fetch public workout
+                cur.execute(
+                    'SELECT * FROM public_workouts WHERE id=%s',
+                    (public_workout_id,)
+                )
+                pw = cur.fetchone()
+                if not pw:
+                    return jsonify({'error': 'public workout not found'}), 404
+
+                # Check if already saved
+                cur.execute(
+                    'SELECT id FROM saved_workouts WHERE user_id=%s AND public_workout_id=%s',
+                    (user_id, public_workout_id)
+                )
+                if cur.fetchone():
+                    return jsonify({'error': 'already saved'}), 400
+
+                # Prepare values
+                name = custom_name or pw['name']
+                description = custom_description or pw.get('instructions') or ''
+                equipment = custom_equipment or (pw['equipment'].split(',') if pw['equipment'] else [])
+                eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
+
+                # Insert into saved_workouts
+                cur.execute(
+                    '''
+                    INSERT INTO saved_workouts
+                    (user_id, public_workout_id, name, description, equipment, type, muscles, level)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
+                    ''',
+                    (user_id, public_workout_id, name, description, eq_str,
+                     pw.get('type'), pw.get('muscles'), pw.get('level'))
+                )
+                saved_id = cur.fetchone()[0]
+
+                # Generate checklist items
+                items = generate_checklist(equipment if isinstance(equipment, list) else [])
+                for it in items:
+                    cur.execute(
+                        'INSERT INTO checklist_items (task, done, workout_id, source) VALUES (%s,%s,%s,%s)',
+                        (it['task'], it['done'], saved_id, 'saved')
+                    )
+
+        return jsonify({
+            'message': 'public workout saved',
+            'saved_workout': {
+                'id': saved_id,
+                'name': name,
+                'description': description,
+                'equipment': equipment,
+                'checklist': items
+            }
+        }), 201
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # ---------------- DELETE WORKOUT ----------------
 @workouts_bp.route('/workouts/<string:source>/<int:wid>', methods=['DELETE'])
