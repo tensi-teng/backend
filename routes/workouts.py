@@ -201,18 +201,19 @@ def toggle_checklist_item(item_id):
 
         with get_conn() as conn:
             with conn.cursor() as cur:
+                # Determine which items to toggle
                 if item_id.lower() == 'all':
                     cur.execute(
                         '''
-                        SELECT ci.id, ci.done 
+                        SELECT ci.id, ci.done
                         FROM checklist_items ci
                         JOIN workouts w ON ci.workout_id = w.id
-                        WHERE w.user_id=%s
+                        WHERE w.user_id = %s
                         UNION
                         SELECT ci.id, ci.done
                         FROM checklist_items ci
                         JOIN saved_workouts w ON ci.workout_id = w.id
-                        WHERE w.user_id=%s
+                        WHERE w.user_id = %s
                         ''',
                         (user_id, user_id)
                     )
@@ -221,7 +222,7 @@ def toggle_checklist_item(item_id):
                     ids = [int(i.strip()) for i in item_id.split(',')]
                     cur.execute(
                         '''
-                        SELECT ci.id, ci.done 
+                        SELECT ci.id, ci.done
                         FROM checklist_items ci
                         JOIN workouts w ON ci.workout_id = w.id
                         WHERE ci.id = ANY(%s) AND w.user_id = %s
@@ -240,14 +241,18 @@ def toggle_checklist_item(item_id):
 
                 toggled = []
                 for cid, done in items:
-                    new_done = not done
-                    cur.execute('UPDATE checklist_items SET done=%s WHERE id=%s', (new_done, cid))
+                    new_done = not done  # Toggle True <-> False
+                    cur.execute(
+                        'UPDATE checklist_items SET done = %s WHERE id = %s',
+                        (new_done, cid)
+                    )
                     toggled.append({'id': cid, 'done': new_done})
 
         return jsonify({'message': 'toggled', 'toggled_items': toggled}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 # ---------------- LIST ALL CHECKLIST ITEMS ----------------

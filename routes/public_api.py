@@ -63,15 +63,16 @@ def save_public_workouts(public_workout_id=None):
         data = request.get_json() or {}
 
         # Determine list of IDs
-        workout_ids = []
         if public_workout_id is not None:
             workout_ids = [public_workout_id]
-        elif 'workout_ids' in data:
-            if isinstance(data['workout_ids'], int):
-                workout_ids = [data['workout_ids']]
-            elif isinstance(data['workout_ids'], list):
-                workout_ids = data['workout_ids']
         else:
+            workout_ids = data.get('workout_ids', [])
+            if isinstance(workout_ids, int):
+                workout_ids = [workout_ids]
+            elif not isinstance(workout_ids, list):
+                return jsonify({'error': 'workout_ids must be an int or list of ints'}), 400
+
+        if not workout_ids:
             return jsonify({'error': 'workout_ids required'}), 400
 
         saved_workouts = []
@@ -79,7 +80,7 @@ def save_public_workouts(public_workout_id=None):
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 for wid in workout_ids:
-                    # Optional overrides per workout
+                    # Fetch optional overrides
                     overrides = data.get('overrides', {}).get(str(wid), {})
                     custom_name = overrides.get('name')
                     custom_description = overrides.get('description')
@@ -91,13 +92,28 @@ def save_public_workouts(public_workout_id=None):
                     if not public_w:
                         continue  # skip invalid ID
 
-                    # Prevent duplicates
+                    # Check if already saved
                     cur.execute(
-                        'SELECT id FROM saved_workouts WHERE user_id=%s AND public_workout_id=%s',
+                        'SELECT * FROM saved_workouts WHERE user_id=%s AND public_workout_id=%s',
                         (user_id, wid)
                     )
-                    if cur.fetchone():
-                        continue  # skip already saved
+                    existing_saved = cur.fetchone()
+                    if existing_saved:
+                        saved_id = existing_saved['id']
+                        # Fetch checklist items
+                        cur.execute(
+                            'SELECT id, task, done, workout_id FROM checklist_items WHERE workout_id=%s',
+                            (saved_id,)
+                        )
+                        checklist = cur.fetchall()
+                        saved_workouts.append({
+                            'id': saved_id,
+                            'name': existing_saved['name'],
+                            'description': existing_saved['description'],
+                            'equipment': existing_saved['equipment'].split(',') if existing_saved['equipment'] else [],
+                            'checklist': checklist
+                        })
+                        continue  # skip insert
 
                     # Prepare values
                     name = custom_name or public_w['name']
@@ -119,7 +135,7 @@ def save_public_workouts(public_workout_id=None):
                     )
                     saved_id = cur.fetchone()[0]
 
-                    # Generate checklist items (without source)
+                    # Generate checklist items
                     checklist = generate_checklist(equipment) if equipment else []
                     for item in checklist:
                         cur.execute(
@@ -136,7 +152,7 @@ def save_public_workouts(public_workout_id=None):
                     })
 
         if not saved_workouts:
-            return jsonify({'error': 'no workouts saved (may already exist or invalid IDs)'}), 409
+            return jsonify({'error': 'no workouts saved (invalid IDs)'}), 409
 
         return jsonify({'message': 'workouts saved', 'saved_workouts': saved_workouts}), 201
 
