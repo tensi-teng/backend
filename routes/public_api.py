@@ -53,65 +53,94 @@ def get_workouts():
         return jsonify({'error': 'database error', 'detail': str(e)}), 500
 
 
-# ---------------- SAVE PUBLIC WORKOUT ----------------
+# ---------------- SAVE PUBLIC WORKOUT(S) ----------------
+@public_bp.route('/workouts/save', methods=['POST'])
 @public_bp.route('/workouts/save/<int:public_workout_id>', methods=['POST'])
 @jwt_required()
-def save_public_workout(public_workout_id):
+def save_public_workouts(public_workout_id=None):
     try:
         user_id = int(get_jwt_identity())
         data = request.get_json() or {}
 
-        custom_name = data.get('name')
-        custom_description = data.get('description')
-        custom_equipment = data.get('equipment')
+        # Determine list of IDs
+        workout_ids = []
+        if public_workout_id is not None:
+            workout_ids = [public_workout_id]  # single via URL
+        elif 'workout_ids' in data:
+            if isinstance(data['workout_ids'], int):
+                workout_ids = [data['workout_ids']]
+            elif isinstance(data['workout_ids'], list):
+                workout_ids = data['workout_ids']
+        else:
+            return jsonify({'error': 'workout_ids required'}), 400
+
+        saved_workouts = []
 
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                cur.execute('SELECT * FROM public_workouts WHERE id=%s', (public_workout_id,))
-                pw = cur.fetchone()
-                if not pw:
-                    return jsonify({'error': 'public workout not found'}), 404
+                for wid in workout_ids:
+                    # Optional overrides per workout
+                    overrides = data.get('overrides', {}).get(str(wid), {})
+                    custom_name = overrides.get('name')
+                    custom_description = overrides.get('description')
+                    custom_equipment = overrides.get('equipment')
 
-                cur.execute(
-                    'SELECT id FROM saved_workouts WHERE user_id=%s AND public_workout_id=%s',
-                    (user_id, public_workout_id)
-                )
-                if cur.fetchone():
-                    return jsonify({'error': 'already saved'}), 400
+                    # Fetch public workout
+                    cur.execute('SELECT * FROM public_workouts WHERE id=%s', (wid,))
+                    public_w = cur.fetchone()
+                    if not public_w:
+                        continue  # skip invalid ID
 
-                name = custom_name or pw['name']
-                description = custom_description or pw.get('instructions') or ''
-                equipment = custom_equipment or (pw['equipment'].split(',') if pw['equipment'] else [])
-                eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
-
-                cur.execute(
-                    '''
-                    INSERT INTO saved_workouts
-                    (user_id, public_workout_id, name, description, equipment, type, muscles, level)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
-                    ''',
-                    (user_id, public_workout_id, name, description, eq_str,
-                     pw.get('type'), pw.get('muscles'), pw.get('level'))
-                )
-                saved_id = cur.fetchone()[0]
-
-                items = generate_checklist(equipment if isinstance(equipment, list) else [])
-                for it in items:
+                    # Prevent duplicates
                     cur.execute(
-                        'INSERT INTO checklist_items (task, done, workout_id, source) VALUES (%s,%s,%s,%s)',
-                        (it['task'], it['done'], saved_id, 'saved')
+                        'SELECT id FROM saved_workouts WHERE user_id=%s AND public_workout_id=%s',
+                        (user_id, wid)
                     )
+                    if cur.fetchone():
+                        continue  # skip already saved
 
-        return jsonify({
-            'message': 'public workout saved',
-            'saved_workout': {
-                'id': saved_id,
-                'name': name,
-                'description': description,
-                'equipment': equipment,
-                'checklist': items
-            }
-        }), 201
+                    # Prepare values
+                    name = custom_name or public_w['name']
+                    description = custom_description or public_w.get('instructions') or ''
+                    equipment = custom_equipment or (public_w['equipment'].split(',') if public_w['equipment'] else [])
+                    eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
+
+                    # Insert saved workout
+                    cur.execute(
+                        '''
+                        INSERT INTO saved_workouts
+                        (user_id, public_workout_id, name, description, equipment, type, muscles, level)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
+                        ''',
+                        (
+                            user_id, wid, name, description, eq_str,
+                            public_w.get('type'), public_w.get('muscles'), public_w.get('level')
+                        )
+                    )
+                    saved_id = cur.fetchone()[0]
+
+                    # Generate checklist items
+                    checklist = generate_checklist(equipment) if equipment else []
+                    for item in checklist:
+                        cur.execute(
+                            'INSERT INTO checklist_items (task, done, workout_id, source) VALUES (%s,%s,%s,%s)',
+                            (item['task'], item['done'], saved_id, 'saved')
+                        )
+
+                    saved_workouts.append({
+                        'id': saved_id,
+                        'name': name,
+                        'description': description,
+                        'equipment': equipment,
+                        'checklist': checklist
+                    })
+
+        if not saved_workouts:
+            return jsonify({'error': 'no workouts saved (may already exist or invalid IDs)'}), 409
+
+        return jsonify({'message': 'workouts saved', 'saved_workouts': saved_workouts}), 201
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
