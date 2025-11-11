@@ -1,10 +1,18 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt, get_jwt_identity
 from db import get_conn
 
 auth_bp = Blueprint('auth', __name__)
 
+# Default gestures for every new user
+DEFAULT_GESTURES = [
+    {"name": "swipe_left", "action": "delete"},
+    {"name": "swipe_right", "action": "archive"},
+    {"name": "shake", "action": "reset"}
+]
+
+# REGISTER
 @auth_bp.route("/register", methods=["POST"])
 def register():
     data = request.get_json() or {}
@@ -19,6 +27,7 @@ def register():
 
     with get_conn() as conn:
         with conn.cursor() as cur:
+            # Check for existing user
             cur.execute(
                 "SELECT username, email, reg_number FROM users WHERE username=%s OR email=%s OR reg_number=%s",
                 (username, email, reg_number),
@@ -32,6 +41,7 @@ def register():
                 if existing[2] == reg_number:
                     return jsonify({"error": "Registration number already exists"}), 400
 
+            # Insert new user
             hashed_pw = generate_password_hash(password)
             cur.execute(
                 """
@@ -41,11 +51,18 @@ def register():
                 """,
                 (username, hashed_pw, name, reg_number, email),
             )
-            uid = str(cur.fetchone()[0])  # Convert user ID to string
+            uid = str(cur.fetchone()[0])  # user ID as string
+
+            # DEFAULT GESTURES
+            for g in DEFAULT_GESTURES:
+                cur.execute(
+                    'INSERT INTO gestures (name, action, user_id) VALUES (%s, %s, %s)',
+                    (g['name'], g['action'], uid)
+                )
 
     return jsonify({'message': 'user registered', 'user_id': uid}), 201
 
-
+# LOGIN
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json() or {}
@@ -61,7 +78,18 @@ def login():
             row = cur.fetchone()
             if not row or not check_password_hash(row[1], password):
                 return jsonify({'error': 'invalid credentials'}), 401
-            uid = str(row[0])  # Convert user ID to string
+            uid = str(row[0])
 
-    token = create_access_token(identity=uid)  # Identity is now a string
+    token = create_access_token(identity=uid)
     return jsonify({'token': token}), 200
+
+# LOGOUT
+jwt_blacklist = set()
+
+@auth_bp.route("/logout", methods=["POST"])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]
+    user_id = get_jwt_identity()
+    jwt_blacklist.add(jti)
+    return jsonify({"message": f"User {user_id} logged out successfully"}), 200

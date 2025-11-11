@@ -6,7 +6,7 @@ from utils.generate_checklist import generate_checklist
 
 workouts_bp = Blueprint('workouts', __name__)
 
-# ---------------- CREATE USER WORKOUT ----------------
+# CREATE USER WORKOUT
 @workouts_bp.route('/workouts', methods=['POST'])
 @jwt_required()
 def create_workout():
@@ -48,10 +48,10 @@ def create_workout():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ---------------- LIST USER WORKOUTS ----------------
+# LIST USER WORKOUTS
 @workouts_bp.route('/workouts', methods=['GET'])
 @jwt_required()
-def list_workouts():
+def list():
     try:
         user_id = int(get_jwt_identity())
         with get_conn() as conn:
@@ -85,7 +85,7 @@ def list_workouts():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
-# ---------------- UPDATE USER WORKOUT ----------------
+# UPDATE USER WORKOUT 
 @workouts_bp.route('/workouts/<int:wid>', methods=['PUT'])
 @jwt_required()
 def update_workout(wid):
@@ -120,7 +120,7 @@ def update_workout(wid):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ---------------- DELETE USER WORKOUT ----------------
+# DELETE USER WORKOUT
 @workouts_bp.route('/workouts/<int:wid>', methods=['DELETE'])
 @jwt_required()
 def delete_workout(wid):
@@ -137,7 +137,7 @@ def delete_workout(wid):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ---------------- TOGGLE CHECKLIST ITEM ----------------
+# TOGGLE CHECKLIST ITEM 
 @workouts_bp.route('/checklist/<int:item_id>', methods=['PATCH'])
 @jwt_required()
 def toggle_checklist(item_id):
@@ -159,10 +159,10 @@ def toggle_checklist(item_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ---------------- PUBLIC WORKOUTS ----------------
-@workouts_bp.route('/public_workouts', methods=['GET'])
+# PUBLIC WORKOUTS 
+@workouts_bp.route('/workouts', methods=['GET'])
 @jwt_required(optional=True)
-def list_public_workouts():
+def list_workouts():
     try:
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
@@ -176,8 +176,8 @@ def list_public_workouts():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
-# ---------------- SAVE PUBLIC WORKOUT ----------------
-@workouts_bp.route('/public_workouts/save/<int:workout_id>', methods=['POST'])
+# SAVE PUBLIC WORKOUT 
+@workouts_bp.route('/workouts/save/<int:workout_id>', methods=['POST'])
 @jwt_required()
 def save_public_workout(workout_id):
     try:
@@ -225,7 +225,7 @@ def save_public_workout(workout_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ---------------- LIST SAVED WORKOUTS ----------------
+# LIST SAVED WORKOUTS
 @workouts_bp.route('/saved', methods=['GET'])
 @jwt_required()
 def list_saved_workouts():
@@ -246,7 +246,7 @@ def list_saved_workouts():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ---------------- UPDATE SAVED WORKOUT ----------------
+# UPDATE SAVED WORKOUT
 @workouts_bp.route('/saved/<int:workout_id>', methods=['PUT'])
 @jwt_required()
 def update_saved_workout(workout_id):
@@ -291,7 +291,7 @@ def delete_saved_workout(workout_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ---------------- TOGGLE CHECKLIST FOR SAVED WORKOUT ----------------
+# TOGGLE CHECKLIST FOR SAVED WORKOUT
 @workouts_bp.route('/checklist/<int:item_id>', methods=['PATCH'])
 @jwt_required()
 def toggle_saved_checklist(item_id):
@@ -313,7 +313,7 @@ def toggle_saved_checklist(item_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-# ---------------- LIST ALL CHECKLIST ITEMS FOR USER ----------------
+# LIST ALL CHECKLIST ITEMS FOR USER
 @workouts_bp.route('/checklist', methods=['GET'])
 @jwt_required()
 def list_checklist_items():
@@ -321,7 +321,6 @@ def list_checklist_items():
         user_id = int(get_jwt_identity())
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                # Get checklist items from user workouts
                 cur.execute(
                     'SELECT ci.id, ci.task, ci.done, ci.workout_id, w.name AS workout_name '
                     'FROM checklist_items ci '
@@ -331,7 +330,6 @@ def list_checklist_items():
                 )
                 user_workout_items = cur.fetchall()
 
-                # Get checklist items from saved public workouts
                 cur.execute(
                     'SELECT ci.id, ci.task, ci.done, ci.workout_id, sw.name AS workout_name '
                     'FROM checklist_items ci '
