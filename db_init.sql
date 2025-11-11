@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS checklist_items (
     task TEXT NOT NULL,
     done BOOLEAN DEFAULT FALSE,
     workout_id INTEGER NOT NULL,
-    source VARCHAR(20) NOT NULL CHECK (source IN ('workouts', 'saved'))
 );
 
 CREATE TABLE IF NOT EXISTS gestures (
