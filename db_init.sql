@@ -5,7 +5,6 @@ DROP TABLE IF EXISTS workouts CASCADE;
 DROP TABLE IF EXISTS public_workouts CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
-
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(80) UNIQUE NOT NULL,
@@ -15,7 +14,6 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(200) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 CREATE TABLE IF NOT EXISTS public_workouts (
     id SERIAL PRIMARY KEY,
@@ -27,7 +25,6 @@ CREATE TABLE IF NOT EXISTS public_workouts (
     level VARCHAR(20)
 );
 
-
 CREATE TABLE IF NOT EXISTS workouts (
     id SERIAL PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
@@ -36,7 +33,6 @@ CREATE TABLE IF NOT EXISTS workouts (
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 CREATE TABLE IF NOT EXISTS saved_workouts (
     id SERIAL PRIMARY KEY,
@@ -52,18 +48,13 @@ CREATE TABLE IF NOT EXISTS saved_workouts (
     UNIQUE(user_id, public_workout_id)
 );
 
-
 CREATE TABLE IF NOT EXISTS checklist_items (
     id SERIAL PRIMARY KEY,
     task TEXT NOT NULL,
     done BOOLEAN DEFAULT FALSE,
     workout_id INTEGER NOT NULL,
-    source VARCHAR(20) NOT NULL,  -- 'workouts' or 'saved'
-    CONSTRAINT fk_workout
-        FOREIGN KEY (workout_id) 
-        REFERENCES workouts(id) ON DELETE CASCADE
+    source VARCHAR(20) NOT NULL CHECK (source IN ('workouts', 'saved'))
 );
-
 
 CREATE TABLE IF NOT EXISTS gestures (
     id SERIAL PRIMARY KEY,
