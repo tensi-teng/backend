@@ -33,8 +33,8 @@ def create_workout():
                 items = generate_checklist(equipment if isinstance(equipment, list) else [])
                 for it in items:
                     cur.execute(
-                        'INSERT INTO checklist_items (task, done, workout_id, source) VALUES (%s,%s,%s,%s)',
-                        (it['task'], it['done'], wid, 'workouts')
+                        'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
+                        (it['task'], it['done'], wid)
                     )
 
         return jsonify({
@@ -46,75 +46,76 @@ def create_workout():
                 'equipment': equipment
             }
         }), 201
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
-# ---------------- LIST USER WORKOUTS (NO CHECKLIST) ----------------
+# ---------------- LIST USER WORKOUTS ----------------
 @workouts_bp.route('/workouts', methods=['GET'])
 @jwt_required()
 def list_workouts():
     try:
         user_id = int(get_jwt_identity())
+        workouts = []
+
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                # Fetch user workouts
+                # Workouts table
                 cur.execute(
                     'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY id DESC',
                     (user_id,)
                 )
-                user_rows = cur.fetchall()
+                workouts.extend(cur.fetchall())
 
-                # Fetch saved workouts
+                # Saved workouts table
                 cur.execute(
                     'SELECT id, name, description, equipment FROM saved_workouts WHERE user_id=%s ORDER BY id DESC',
                     (user_id,)
                 )
-                saved_rows = cur.fetchall()
+                workouts.extend(cur.fetchall())
 
-        # Prepare output without checklist
         out = []
-        for r, src in [(r, 'workouts') for r in user_rows] + [(r, 'saved') for r in saved_rows]:
+        for r in workouts:
             eq = [e.strip() for e in (r['equipment'] or '').split(',') if e]
             out.append({
                 'id': r['id'],
                 'name': r['name'],
                 'description': r.get('description'),
-                'equipment': eq,
-                'source': src
+                'equipment': eq
             })
 
         return jsonify(out), 200
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
-
 # ---------------- UPDATE WORKOUT ----------------
-@workouts_bp.route('/workouts/<string:source>/<int:wid>', methods=['PUT'])
+@workouts_bp.route('/workouts/<int:wid>', methods=['PUT'])
 @jwt_required()
-def update_workout(source, wid):
+def update_workout(wid):
     try:
-        if source not in ('workouts', 'saved'):
-            return jsonify({'error': 'invalid source'}), 400
-
         data = request.get_json() or {}
         user_id = int(get_jwt_identity())
         name = data.get('name')
         description = data.get('description')
         equipment = data.get('equipment')
 
-        table = 'workouts' if source == 'workouts' else 'saved_workouts'
-
+        # Determine table
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute(sql.SQL('SELECT user_id FROM {table} WHERE id=%s').format(
-                    table=sql.Identifier(table)
-                ), (wid,))
+                # Check ownership in workouts table first
+                cur.execute('SELECT user_id FROM workouts WHERE id=%s', (wid,))
                 row = cur.fetchone()
+                table = 'workouts'
+
+                if not row:
+                    # Check saved_workouts
+                    cur.execute('SELECT user_id FROM saved_workouts WHERE id=%s', (wid,))
+                    row = cur.fetchone()
+                    table = 'saved_workouts'
+
                 if not row or row[0] != user_id:
                     return jsonify({'error': 'not found or not allowed'}), 404
 
@@ -133,69 +134,57 @@ def update_workout(source, wid):
                     ), (eq_str, wid))
 
                     # Reset checklist
-                    cur.execute(
-                        'DELETE FROM checklist_items WHERE workout_id=%s AND source=%s',
-                        (wid, source)
-                    )
+                    cur.execute('DELETE FROM checklist_items WHERE workout_id=%s', (wid,))
                     items = generate_checklist(equipment if isinstance(equipment, list) else [])
                     for it in items:
                         cur.execute(
-                            'INSERT INTO checklist_items (task, done, workout_id, source) VALUES (%s,%s,%s,%s)',
-                            (it['task'], it['done'], wid, source)
+                            'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
+                            (it['task'], it['done'], wid)
                         )
 
         return jsonify({'message': 'updated'}), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
 # ---------------- DELETE WORKOUT(S) ----------------
-@workouts_bp.route('/workouts/<string:source>/<wid>', methods=['DELETE'])
+@workouts_bp.route('/workouts/<wid>', methods=['DELETE'])
 @jwt_required()
-def delete_workout(source, wid):
+def delete_workout(wid):
     try:
-        if source not in ('workouts', 'saved'):
-            return jsonify({'error': 'invalid source'}), 400
-
         user_id = int(get_jwt_identity())
-        table = 'workouts' if source == 'workouts' else 'saved_workouts'
+        ids_to_delete = []
 
         with get_conn() as conn:
             with conn.cursor() as cur:
                 if wid.lower() == 'all':
-                    # Delete all workouts for this user
-                    cur.execute(sql.SQL('SELECT id FROM {table} WHERE user_id=%s').format(
-                        table=sql.Identifier(table)
-                    ), (user_id,))
-                    ids_to_delete = [row[0] for row in cur.fetchall()]
+                    # All workouts
+                    cur.execute('SELECT id FROM workouts WHERE user_id=%s', (user_id,))
+                    ids_to_delete.extend([r[0] for r in cur.fetchall()])
+
+                    cur.execute('SELECT id FROM saved_workouts WHERE user_id=%s', (user_id,))
+                    ids_to_delete.extend([r[0] for r in cur.fetchall()])
                 else:
-                    # Delete single or multiple IDs
                     ids_to_delete = [int(w.strip()) for w in wid.split(',')]
 
                     # Verify ownership
-                    cur.execute(
-                        sql.SQL('SELECT id FROM {table} WHERE id = ANY(%s) AND user_id=%s').format(
-                            table=sql.Identifier(table)
-                        ), (ids_to_delete, user_id)
-                    )
-                    valid_ids = [row[0] for row in cur.fetchall()]
-                    if not valid_ids:
-                        return jsonify({'error': 'not found or not allowed'}), 404
-                    ids_to_delete = valid_ids
+                    cur.execute('SELECT id FROM workouts WHERE id = ANY(%s) AND user_id=%s', (ids_to_delete, user_id))
+                    valid = [r[0] for r in cur.fetchall()]
+
+                    cur.execute('SELECT id FROM saved_workouts WHERE id = ANY(%s) AND user_id=%s', (ids_to_delete, user_id))
+                    valid += [r[0] for r in cur.fetchall()]
+
+                    ids_to_delete = valid
 
                 if not ids_to_delete:
                     return jsonify({'message': 'nothing to delete'}), 200
 
                 # Delete workouts
-                cur.execute(
-                    sql.SQL('DELETE FROM {table} WHERE id = ANY(%s)').format(table=sql.Identifier(table)),
-                    (ids_to_delete,)
-                )
+                cur.execute('DELETE FROM workouts WHERE id = ANY(%s)', (ids_to_delete,))
+                cur.execute('DELETE FROM saved_workouts WHERE id = ANY(%s)', (ids_to_delete,))
                 # Delete checklist items
-                cur.execute(
-                    'DELETE FROM checklist_items WHERE workout_id = ANY(%s) AND source=%s',
-                    (ids_to_delete, source)
-                )
+                cur.execute('DELETE FROM checklist_items WHERE workout_id = ANY(%s)', (ids_to_delete,))
 
         return jsonify({'message': 'deleted', 'deleted_ids': ids_to_delete}), 200
 
@@ -204,38 +193,45 @@ def delete_workout(source, wid):
 
 
 # ---------------- TOGGLE CHECKLIST ITEM(S) ----------------
-@workouts_bp.route('/checklist/<string:source>/<item_id>', methods=['PATCH'])
+@workouts_bp.route('/checklist/<item_id>', methods=['PATCH'])
 @jwt_required()
-def toggle_checklist_item(source, item_id):
+def toggle_checklist_item(item_id):
     try:
-        if source not in ('workouts', 'saved'):
-            return jsonify({'error': 'invalid source'}), 400
-
         user_id = int(get_jwt_identity())
-        table = 'workouts' if source == 'workouts' else 'saved_workouts'
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                # Determine which items to toggle
                 if item_id.lower() == 'all':
                     cur.execute(
-                        sql.SQL(
-                            'SELECT ci.id, ci.done FROM checklist_items ci '
-                            'JOIN {table} w ON ci.workout_id = w.id '
-                            'WHERE ci.source=%s AND w.user_id=%s'
-                        ).format(table=sql.Identifier(table)),
-                        (source, user_id)
+                        '''
+                        SELECT ci.id, ci.done 
+                        FROM checklist_items ci
+                        JOIN workouts w ON ci.workout_id = w.id
+                        WHERE w.user_id=%s
+                        UNION
+                        SELECT ci.id, ci.done
+                        FROM checklist_items ci
+                        JOIN saved_workouts w ON ci.workout_id = w.id
+                        WHERE w.user_id=%s
+                        ''',
+                        (user_id, user_id)
                     )
                     items = cur.fetchall()
                 else:
                     ids = [int(i.strip()) for i in item_id.split(',')]
                     cur.execute(
-                        sql.SQL(
-                            'SELECT ci.id, ci.done FROM checklist_items ci '
-                            'JOIN {table} w ON ci.workout_id = w.id '
-                            'WHERE ci.id = ANY(%s) AND ci.source=%s AND w.user_id=%s'
-                        ).format(table=sql.Identifier(table)),
-                        (ids, source, user_id)
+                        '''
+                        SELECT ci.id, ci.done 
+                        FROM checklist_items ci
+                        JOIN workouts w ON ci.workout_id = w.id
+                        WHERE ci.id = ANY(%s) AND w.user_id = %s
+                        UNION
+                        SELECT ci.id, ci.done
+                        FROM checklist_items ci
+                        JOIN saved_workouts w ON ci.workout_id = w.id
+                        WHERE ci.id = ANY(%s) AND w.user_id = %s
+                        ''',
+                        (ids, user_id, ids, user_id)
                     )
                     items = cur.fetchall()
 
@@ -254,8 +250,7 @@ def toggle_checklist_item(source, item_id):
         return jsonify({'error': str(e)}), 500
 
 
-
-# ---------------- LIST ALL CHECKLIST ITEMS FOR USER ----------------
+# ---------------- LIST ALL CHECKLIST ITEMS ----------------
 @workouts_bp.route('/checklist', methods=['GET'])
 @jwt_required()
 def list_all_checklist_items():
@@ -265,18 +260,15 @@ def list_all_checklist_items():
 
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                for source, table in [('workouts', 'workouts'), ('saved', 'saved_workouts')]:
+                for table in ['workouts', 'saved_workouts']:
                     query = sql.SQL(
-                        "SELECT ci.id, ci.task, ci.done, ci.workout_id, w.name AS workout_name, %s AS source "
+                        "SELECT ci.id, ci.task, ci.done, ci.workout_id, w.name AS workout_name "
                         "FROM checklist_items ci "
                         "JOIN {table} w ON ci.workout_id = w.id "
                         "WHERE w.user_id = %s"
                     ).format(table=sql.Identifier(table))
-
-                    # Convert to string for psycopg to avoid IDE/type warnings
-                    cur.execute(query.as_string(conn), (source, user_id))
-                    items = cur.fetchall()
-                    all_items.extend(items)
+                    cur.execute(query, (user_id,))
+                    all_items.extend(cur.fetchall())
 
         return jsonify(all_items), 200
     except Exception as e:

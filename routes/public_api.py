@@ -65,7 +65,7 @@ def save_public_workouts(public_workout_id=None):
         # Determine list of IDs
         workout_ids = []
         if public_workout_id is not None:
-            workout_ids = [public_workout_id]  # single via URL
+            workout_ids = [public_workout_id]
         elif 'workout_ids' in data:
             if isinstance(data['workout_ids'], int):
                 workout_ids = [data['workout_ids']]
@@ -119,12 +119,12 @@ def save_public_workouts(public_workout_id=None):
                     )
                     saved_id = cur.fetchone()[0]
 
-                    # Generate checklist items
+                    # Generate checklist items (without source)
                     checklist = generate_checklist(equipment) if equipment else []
                     for item in checklist:
                         cur.execute(
-                            'INSERT INTO checklist_items (task, done, workout_id, source) VALUES (%s,%s,%s,%s)',
-                            (item['task'], item['done'], saved_id, 'saved')
+                            'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
+                            (item['task'], item['done'], saved_id)
                         )
 
                     saved_workouts.append({
@@ -142,5 +142,3 @@ def save_public_workouts(public_workout_id=None):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
