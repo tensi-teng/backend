@@ -12,7 +12,7 @@ workouts_bp = Blueprint('workouts', __name__)
 @jwt_required()
 def create_workout():
     try:
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         name = data.get('name')
         if not name:
             return jsonify({'error': 'name required'}), 400
@@ -20,12 +20,16 @@ def create_workout():
         description = data.get('description', '')
         equipment = data.get('equipment', [])
         user_id = int(get_jwt_identity())
-        eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
+
+        eq_str = ",".join(equipment) if isinstance(equipment, list) else (equipment or "")
 
         with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    'INSERT INTO workouts (name, description, equipment, user_id) VALUES (%s,%s,%s,%s) RETURNING id',
+                    '''
+                    INSERT INTO workouts (name, description, equipment, user_id)
+                    VALUES (%s,%s,%s,%s) RETURNING id
+                    ''',
                     (name, description, eq_str, user_id)
                 )
                 wid = cur.fetchone()[0]
@@ -34,7 +38,7 @@ def create_workout():
                 for it in items:
                     cur.execute(
                         'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
-                        (it['task'], it['done'], wid)
+                        (it["task"], it["done"], wid)
                     )
 
         return jsonify({
@@ -51,6 +55,7 @@ def create_workout():
         return jsonify({'error': str(e)}), 500
 
 
+
 # ---------------- LIST USER WORKOUTS ----------------
 @workouts_bp.route('/workouts', methods=['GET'])
 @jwt_required()
@@ -61,23 +66,27 @@ def list_workouts():
 
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                # Workouts table
                 cur.execute(
-                    'SELECT id, name, description, equipment FROM workouts WHERE user_id=%s ORDER BY id DESC',
+                    '''
+                    SELECT id, name, description, equipment
+                    FROM workouts WHERE user_id=%s ORDER BY id DESC
+                    ''',
                     (user_id,)
                 )
                 workouts.extend(cur.fetchall())
 
-                # Saved workouts table
                 cur.execute(
-                    'SELECT id, name, description, equipment FROM saved_workouts WHERE user_id=%s ORDER BY id DESC',
+                    '''
+                    SELECT id, name, description, equipment
+                    FROM saved_workouts WHERE user_id=%s ORDER BY id DESC
+                    ''',
                     (user_id,)
                 )
                 workouts.extend(cur.fetchall())
 
         out = []
         for r in workouts:
-            eq = [e.strip() for e in (r['equipment'] or '').split(',') if e]
+            eq = [e.strip() for e in (r['equipment'] or "").split(",") if e]
             out.append({
                 'id': r['id'],
                 'name': r['name'],
@@ -91,27 +100,29 @@ def list_workouts():
         return jsonify({'error': str(e)}), 500
 
 
+
 # ---------------- UPDATE WORKOUT ----------------
 @workouts_bp.route('/workouts/<int:wid>', methods=['PUT'])
 @jwt_required()
 def update_workout(wid):
     try:
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         user_id = int(get_jwt_identity())
+
         name = data.get('name')
         description = data.get('description')
         equipment = data.get('equipment')
 
-        # Determine table
         with get_conn() as conn:
             with conn.cursor() as cur:
-                # Check ownership in workouts table first
+
+                # Check workouts table
                 cur.execute('SELECT user_id FROM workouts WHERE id=%s', (wid,))
                 row = cur.fetchone()
                 table = 'workouts'
 
+                # If not in workouts, check saved_workouts
                 if not row:
-                    # Check saved_workouts
                     cur.execute('SELECT user_id FROM saved_workouts WHERE id=%s', (wid,))
                     row = cur.fetchone()
                     table = 'saved_workouts'
@@ -119,19 +130,28 @@ def update_workout(wid):
                 if not row or row[0] != user_id:
                     return jsonify({'error': 'not found or not allowed'}), 404
 
+                # Update fields
                 if name:
-                    cur.execute(sql.SQL('UPDATE {table} SET name=%s WHERE id=%s').format(
-                        table=sql.Identifier(table)
-                    ), (name, wid))
+                    cur.execute(
+                        sql.SQL("UPDATE {tbl} SET name=%s WHERE id=%s")
+                        .format(tbl=sql.Identifier(table)),
+                        (name, wid)
+                    )
+
                 if description is not None:
-                    cur.execute(sql.SQL('UPDATE {table} SET description=%s WHERE id=%s').format(
-                        table=sql.Identifier(table)
-                    ), (description, wid))
+                    cur.execute(
+                        sql.SQL("UPDATE {tbl} SET description=%s WHERE id=%s")
+                        .format(tbl=sql.Identifier(table)),
+                        (description, wid)
+                    )
+
                 if equipment is not None:
-                    eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
-                    cur.execute(sql.SQL('UPDATE {table} SET equipment=%s WHERE id=%s').format(
-                        table=sql.Identifier(table)
-                    ), (eq_str, wid))
+                    eq_str = ",".join(equipment) if isinstance(equipment, list) else (equipment or "")
+                    cur.execute(
+                        sql.SQL("UPDATE {tbl} SET equipment=%s WHERE id=%s")
+                        .format(tbl=sql.Identifier(table)),
+                        (eq_str, wid)
+                    )
 
                     # Reset checklist
                     cur.execute('DELETE FROM checklist_items WHERE workout_id=%s', (wid,))
@@ -139,13 +159,14 @@ def update_workout(wid):
                     for it in items:
                         cur.execute(
                             'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
-                            (it['task'], it['done'], wid)
+                            (it["task"], it["done"], wid)
                         )
 
         return jsonify({'message': 'updated'}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 # ---------------- DELETE WORKOUT(S) ----------------
@@ -158,38 +179,44 @@ def delete_workout(wid):
 
         with get_conn() as conn:
             with conn.cursor() as cur:
+
+                # DELETE ALL
                 if wid.lower() == 'all':
-                    # All workouts
                     cur.execute('SELECT id FROM workouts WHERE user_id=%s', (user_id,))
                     ids_to_delete.extend([r[0] for r in cur.fetchall()])
 
                     cur.execute('SELECT id FROM saved_workouts WHERE user_id=%s', (user_id,))
                     ids_to_delete.extend([r[0] for r in cur.fetchall()])
                 else:
-                    ids_to_delete = [int(w.strip()) for w in wid.split(',')]
+                    ids = [int(w.strip()) for w in wid.split(',')]
 
-                    # Verify ownership
-                    cur.execute('SELECT id FROM workouts WHERE id = ANY(%s) AND user_id=%s', (ids_to_delete, user_id))
-                    valid = [r[0] for r in cur.fetchall()]
+                    # Check workouts
+                    cur.execute(
+                        'SELECT id FROM workouts WHERE id = ANY(%s) AND user_id=%s',
+                        (ids, user_id)
+                    )
+                    ids_to_delete.extend([r[0] for r in cur.fetchall()])
 
-                    cur.execute('SELECT id FROM saved_workouts WHERE id = ANY(%s) AND user_id=%s', (ids_to_delete, user_id))
-                    valid += [r[0] for r in cur.fetchall()]
-
-                    ids_to_delete = valid
+                    # Check saved_workouts
+                    cur.execute(
+                        'SELECT id FROM saved_workouts WHERE id = ANY(%s) AND user_id=%s',
+                        (ids, user_id)
+                    )
+                    ids_to_delete.extend([r[0] for r in cur.fetchall()])
 
                 if not ids_to_delete:
                     return jsonify({'message': 'nothing to delete'}), 200
 
-                # Delete workouts
+                # DELETE EVERYTHING FOUND
                 cur.execute('DELETE FROM workouts WHERE id = ANY(%s)', (ids_to_delete,))
                 cur.execute('DELETE FROM saved_workouts WHERE id = ANY(%s)', (ids_to_delete,))
-                # Delete checklist items
                 cur.execute('DELETE FROM checklist_items WHERE workout_id = ANY(%s)', (ids_to_delete,))
 
         return jsonify({'message': 'deleted', 'deleted_ids': ids_to_delete}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 # ---------------- TOGGLE CHECKLIST ITEM(S) ----------------
@@ -201,19 +228,19 @@ def toggle_checklist_item(item_id):
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                # Determine which items to toggle
+
                 if item_id.lower() == 'all':
                     cur.execute(
                         '''
                         SELECT ci.id, ci.done
                         FROM checklist_items ci
                         JOIN workouts w ON ci.workout_id = w.id
-                        WHERE w.user_id = %s
+                        WHERE w.user_id=%s
                         UNION
                         SELECT ci.id, ci.done
                         FROM checklist_items ci
-                        JOIN saved_workouts w ON ci.workout_id = w.id
-                        WHERE w.user_id = %s
+                        JOIN saved_workouts sw ON ci.workout_id = sw.id
+                        WHERE sw.user_id=%s
                         ''',
                         (user_id, user_id)
                     )
@@ -225,27 +252,24 @@ def toggle_checklist_item(item_id):
                         SELECT ci.id, ci.done
                         FROM checklist_items ci
                         JOIN workouts w ON ci.workout_id = w.id
-                        WHERE ci.id = ANY(%s) AND w.user_id = %s
+                        WHERE ci.id = ANY(%s) AND w.user_id=%s
                         UNION
                         SELECT ci.id, ci.done
                         FROM checklist_items ci
-                        JOIN saved_workouts w ON ci.workout_id = w.id
-                        WHERE ci.id = ANY(%s) AND w.user_id = %s
+                        JOIN saved_workouts sw ON ci.workout_id = sw.id
+                        WHERE ci.id = ANY(%s) AND sw.user_id=%s
                         ''',
                         (ids, user_id, ids, user_id)
                     )
                     items = cur.fetchall()
 
                 if not items:
-                    return jsonify({'message': 'no items found or allowed'}), 404
+                    return jsonify({'message': 'no items found'}), 404
 
                 toggled = []
                 for cid, done in items:
-                    new_done = not done  # Toggle True <-> False
-                    cur.execute(
-                        'UPDATE checklist_items SET done = %s WHERE id = %s',
-                        (new_done, cid)
-                    )
+                    new_done = not done
+                    cur.execute('UPDATE checklist_items SET done=%s WHERE id=%s', (new_done, cid))
                     toggled.append({'id': cid, 'done': new_done})
 
         return jsonify({'message': 'toggled', 'toggled_items': toggled}), 200
@@ -267,14 +291,17 @@ def list_all_checklist_items():
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 for table in ['workouts', 'saved_workouts']:
                     query = sql.SQL(
-                        "SELECT ci.id, ci.task, ci.done, ci.workout_id, w.name AS workout_name "
-                        "FROM checklist_items ci "
-                        "JOIN {table} w ON ci.workout_id = w.id "
-                        "WHERE w.user_id = %s"
-                    ).format(table=sql.Identifier(table))
+                        '''
+                        SELECT ci.id, ci.task, ci.done, ci.workout_id, w.name AS workout_name
+                        FROM checklist_items ci
+                        JOIN {tbl} w ON ci.workout_id = w.id
+                        WHERE w.user_id=%s
+                        '''
+                    ).format(tbl=sql.Identifier(table))
                     cur.execute(query, (user_id,))
                     all_items.extend(cur.fetchall())
 
         return jsonify(all_items), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
