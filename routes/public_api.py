@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, jwt_required
 from utils.generate_checklist import generate_checklist
@@ -7,6 +8,28 @@ import psycopg
 
 public_bp = Blueprint('public_api', __name__)
 DB_URL = os.getenv('DATABASE_URL')
+
+
+# ---------------------------------------------------
+# Universal Request Data Loader (Fixes "error:0")
+# ---------------------------------------------------
+def get_request_data():
+    # Raw JSON body
+    if request.is_json:
+        return request.get_json()
+
+    # Try decode body (if Postman sends wrong headers)
+    try:
+        return json.loads(request.data)
+    except:
+        pass
+
+    # Handle form-data / multipart
+    if request.form:
+        return request.form.to_dict(flat=True)
+
+    return {}
+
 
 # ---------------- GET PUBLIC WORKOUTS ----------------
 @public_bp.route('/workouts', methods=['GET'])
@@ -25,7 +48,12 @@ def get_workouts():
     try:
         with psycopg.connect(DB_URL, autocommit=True) as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
-                query = "SELECT id, name, equipment, type, muscles, level, instructions FROM public_workouts WHERE 1=1"
+
+                query = """
+                    SELECT id, name, equipment, type, muscles, level, instructions
+                    FROM public_workouts
+                    WHERE 1=1
+                """
                 params = []
 
                 if type_filter:
@@ -64,17 +92,20 @@ def save_public_workouts(public_workout_id=None):
     try:
         user_id = int(get_jwt_identity())
 
-        # 🔥 FIX FOR 400 ERROR
-        data = request.get_json(silent=True) or {}
+        # FIX error:0 (no JSON on first request)
+        data = get_request_data() or {}
 
-        # Determine list of IDs
+        # Determine list of workout IDs to save
         if public_workout_id is not None:
             workout_ids = [public_workout_id]
         else:
             workout_ids = data.get('workout_ids', [])
+
+            # Normalize single number
             if isinstance(workout_ids, int):
                 workout_ids = [workout_ids]
-            elif not isinstance(workout_ids, list):
+
+            if not isinstance(workout_ids, list):
                 return jsonify({'error': 'workout_ids must be an int or list of ints'}), 400
 
         if not workout_ids:
@@ -86,17 +117,18 @@ def save_public_workouts(public_workout_id=None):
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 for wid in workout_ids:
 
-                    # Fetch optional overrides
+                    # Overrides support
                     overrides = data.get('overrides', {}).get(str(wid), {})
                     custom_name = overrides.get('name')
                     custom_description = overrides.get('description')
                     custom_equipment = overrides.get('equipment')
 
-                    # Fetch public workout
+                    # Fetch the public workout
                     cur.execute('SELECT * FROM public_workouts WHERE id=%s', (wid,))
                     public_w = cur.fetchone()
+
                     if not public_w:
-                        continue  # skip invalid ID
+                        continue
 
                     # Check if already saved
                     cur.execute(
@@ -106,7 +138,10 @@ def save_public_workouts(public_workout_id=None):
                     existing_saved = cur.fetchone()
 
                     if existing_saved:
+                        # Already saved – return existing data
                         saved_id = existing_saved['id']
+
+                        # Load checklist
                         cur.execute(
                             'SELECT id, task, done, workout_id FROM checklist_items WHERE workout_id=%s',
                             (saved_id,)
@@ -125,7 +160,10 @@ def save_public_workouts(public_workout_id=None):
                     # Build new values
                     name = custom_name or public_w['name']
                     description = custom_description or public_w.get('instructions') or ''
-                    equipment = custom_equipment or (public_w['equipment'].split(',') if public_w['equipment'] else [])
+                    equipment = custom_equipment or (
+                        public_w['equipment'].split(',') if public_w['equipment'] else []
+                    )
+
                     eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
 
                     # Insert saved workout
@@ -133,7 +171,8 @@ def save_public_workouts(public_workout_id=None):
                         '''
                         INSERT INTO saved_workouts
                         (user_id, public_workout_id, name, description, equipment, type, muscles, level)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                        RETURNING id
                         ''',
                         (
                             user_id, wid, name, description, eq_str,
@@ -142,8 +181,9 @@ def save_public_workouts(public_workout_id=None):
                     )
                     saved_id = cur.fetchone()[0]
 
-                    # Create checklist
+                    # Generate checklist if equipment exists
                     checklist = generate_checklist(equipment) if equipment else []
+
                     for item in checklist:
                         cur.execute(
                             'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
@@ -164,4 +204,5 @@ def save_public_workouts(public_workout_id=None):
         return jsonify({'message': 'workouts saved', 'saved_workouts': saved_workouts}), 201
 
     except Exception as e:
+        current_app.logger.exception('Save workout failed')
         return jsonify({'error': str(e)}), 500
