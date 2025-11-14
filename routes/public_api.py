@@ -11,24 +11,20 @@ DB_URL = os.getenv('DATABASE_URL')
 
 
 # ---------------------------------------------------
-# Universal Request Data Loader (Fixes "error:0")
+# Universal Request Data Loader
+# Returns dict if body exists, else None
 # ---------------------------------------------------
 def get_request_data():
-    # Raw JSON body
     if request.is_json:
         return request.get_json()
-
-    # Try decode body (if Postman sends wrong headers)
     try:
-        return json.loads(request.data)
+        data = json.loads(request.data)
+        return data if isinstance(data, dict) else None
     except:
         pass
-
-    # Handle form-data / multipart
     if request.form:
         return request.form.to_dict(flat=True)
-
-    return {}
+    return None
 
 
 # ---------------- GET PUBLIC WORKOUTS ----------------
@@ -83,7 +79,6 @@ def get_workouts():
         return jsonify({'error': 'database error', 'detail': str(e)}), 500
 
 
-
 # ---------------- SAVE PUBLIC WORKOUT(S) ----------------
 @public_bp.route('/workouts/save', methods=['POST'])
 @public_bp.route('/workouts/save/<int:public_workout_id>', methods=['POST'])
@@ -92,8 +87,12 @@ def save_public_workouts(public_workout_id=None):
     try:
         user_id = int(get_jwt_identity())
 
-        # FIX error:0 (no JSON on first request)
-        data = get_request_data() or {}
+        # Load request data
+        data = get_request_data()
+
+        # If no URL ID, require body
+        if not data and public_workout_id is None:
+            return jsonify({'error': 'Request body required'}), 400
 
         # Determine list of workout IDs to save
         if public_workout_id is not None:
@@ -118,7 +117,7 @@ def save_public_workouts(public_workout_id=None):
                 for wid in workout_ids:
 
                     # Overrides support
-                    overrides = data.get('overrides', {}).get(str(wid), {})
+                    overrides = data.get('overrides', {}).get(str(wid), {}) if data else {}
                     custom_name = overrides.get('name')
                     custom_description = overrides.get('description')
                     custom_equipment = overrides.get('equipment')
