@@ -28,7 +28,6 @@ def mask(value):
 print("\n=== Environment Variables Check ===")
 print("DATABASE_URL:", mask(db_url))
 print("JWT_SECRET_KEY:", mask(jwt_key))
-print("API_KEY:", mask(api_key))
 print("-------------------\n")
 
 # JWT setup

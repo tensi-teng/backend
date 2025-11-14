@@ -8,7 +8,7 @@ auth_bp = Blueprint('auth', __name__)
 # Default gestures for every new user
 DEFAULT_GESTURES = [
     {"name": "swipe_left", "action": "delete"},
-    {"name": "swipe_right", "action": "archive"},
+    {"name": "swipe_right", "action": "mark as done"},
     {"name": "shake", "action": "reset"}
 ]
 

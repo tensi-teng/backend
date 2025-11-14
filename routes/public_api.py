@@ -31,10 +31,11 @@ def get_workouts():
                 if type_filter:
                     query += " AND LOWER(type) LIKE LOWER(%s)"
                     params.append(f"%{type_filter}%")
+
                 if muscle_filter:
-                    # muscles is an array, use ANY for partial match
                     query += " AND EXISTS (SELECT 1 FROM unnest(muscles) m WHERE LOWER(m) LIKE LOWER(%s))"
                     params.append(f"%{muscle_filter}%")
+
                 if level_filter:
                     query += " AND LOWER(level) LIKE LOWER(%s)"
                     params.append(f"%{level_filter}%")
@@ -48,9 +49,11 @@ def get_workouts():
             'count': len(workouts),
             'workouts': workouts
         }), 200
+
     except Exception as e:
         current_app.logger.exception('Error fetching public workouts')
         return jsonify({'error': 'database error', 'detail': str(e)}), 500
+
 
 
 # ---------------- SAVE PUBLIC WORKOUT(S) ----------------
@@ -60,7 +63,9 @@ def get_workouts():
 def save_public_workouts(public_workout_id=None):
     try:
         user_id = int(get_jwt_identity())
-        data = request.get_json() or {}
+
+        # 🔥 FIX FOR 400 ERROR
+        data = request.get_json(silent=True) or {}
 
         # Determine list of IDs
         if public_workout_id is not None:
@@ -80,6 +85,7 @@ def save_public_workouts(public_workout_id=None):
         with get_conn() as conn:
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 for wid in workout_ids:
+
                     # Fetch optional overrides
                     overrides = data.get('overrides', {}).get(str(wid), {})
                     custom_name = overrides.get('name')
@@ -98,14 +104,15 @@ def save_public_workouts(public_workout_id=None):
                         (user_id, wid)
                     )
                     existing_saved = cur.fetchone()
+
                     if existing_saved:
                         saved_id = existing_saved['id']
-                        # Fetch checklist items
                         cur.execute(
                             'SELECT id, task, done, workout_id FROM checklist_items WHERE workout_id=%s',
                             (saved_id,)
                         )
                         checklist = cur.fetchall()
+
                         saved_workouts.append({
                             'id': saved_id,
                             'name': existing_saved['name'],
@@ -113,9 +120,9 @@ def save_public_workouts(public_workout_id=None):
                             'equipment': existing_saved['equipment'].split(',') if existing_saved['equipment'] else [],
                             'checklist': checklist
                         })
-                        continue  # skip insert
+                        continue
 
-                    # Prepare values
+                    # Build new values
                     name = custom_name or public_w['name']
                     description = custom_description or public_w.get('instructions') or ''
                     equipment = custom_equipment or (public_w['equipment'].split(',') if public_w['equipment'] else [])
@@ -135,7 +142,7 @@ def save_public_workouts(public_workout_id=None):
                     )
                     saved_id = cur.fetchone()[0]
 
-                    # Generate checklist items
+                    # Create checklist
                     checklist = generate_checklist(equipment) if equipment else []
                     for item in checklist:
                         cur.execute(
