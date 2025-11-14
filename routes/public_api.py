@@ -16,7 +16,7 @@ DB_URL = os.getenv('DATABASE_URL')
 # ---------------------------------------------------
 def get_request_data():
     if request.is_json:
-        return request.get_json()
+        return request.get_json(silent=True)  # silent avoids JSONDecodeError
     try:
         data = json.loads(request.data)
         return data if isinstance(data, dict) else None
@@ -86,24 +86,19 @@ def get_workouts():
 def save_public_workouts(public_workout_id=None):
     try:
         user_id = int(get_jwt_identity())
-
-        # Load request data
         data = get_request_data()
 
-        # If no URL ID, require body
+        # Require body if no URL ID
         if not data and public_workout_id is None:
             return jsonify({'error': 'Request body required'}), 400
 
-        # Determine list of workout IDs to save
+        # Determine list of workout IDs
         if public_workout_id is not None:
             workout_ids = [public_workout_id]
         else:
             workout_ids = data.get('workout_ids', [])
-
-            # Normalize single number
             if isinstance(workout_ids, int):
                 workout_ids = [workout_ids]
-
             if not isinstance(workout_ids, list):
                 return jsonify({'error': 'workout_ids must be an int or list of ints'}), 400
 
@@ -116,16 +111,14 @@ def save_public_workouts(public_workout_id=None):
             with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 for wid in workout_ids:
 
-                    # Overrides support
                     overrides = data.get('overrides', {}).get(str(wid), {}) if data else {}
                     custom_name = overrides.get('name')
                     custom_description = overrides.get('description')
                     custom_equipment = overrides.get('equipment')
 
-                    # Fetch the public workout
+                    # Fetch public workout
                     cur.execute('SELECT * FROM public_workouts WHERE id=%s', (wid,))
                     public_w = cur.fetchone()
-
                     if not public_w:
                         continue
 
@@ -135,9 +128,7 @@ def save_public_workouts(public_workout_id=None):
                         (user_id, wid)
                     )
                     existing_saved = cur.fetchone()
-
                     if existing_saved:
-                        # Already saved – return existing data
                         saved_id = existing_saved['id']
 
                         # Load checklist
@@ -146,7 +137,6 @@ def save_public_workouts(public_workout_id=None):
                             (saved_id,)
                         )
                         checklist = cur.fetchall()
-
                         saved_workouts.append({
                             'id': saved_id,
                             'name': existing_saved['name'],
@@ -162,8 +152,14 @@ def save_public_workouts(public_workout_id=None):
                     equipment = custom_equipment or (
                         public_w['equipment'].split(',') if public_w['equipment'] else []
                     )
-
                     eq_str = ','.join(equipment) if isinstance(equipment, list) else (equipment or '')
+
+                    # Convert muscles to PostgreSQL array format
+                    muscles = public_w.get('muscles') or []
+                    if isinstance(muscles, list):
+                        muscles_pg = "{" + ",".join(muscles) + "}"
+                    else:
+                        muscles_pg = muscles
 
                     # Insert saved workout
                     cur.execute(
@@ -175,14 +171,16 @@ def save_public_workouts(public_workout_id=None):
                         ''',
                         (
                             user_id, wid, name, description, eq_str,
-                            public_w.get('type'), public_w.get('muscles'), public_w.get('level')
+                            public_w.get('type'), muscles_pg, public_w.get('level')
                         )
                     )
-                    saved_id = cur.fetchone()[0]
+                    saved_id_row = cur.fetchone()
+                    if not saved_id_row:
+                        raise Exception("Failed to insert saved_workout")
+                    saved_id = saved_id_row[0]
 
-                    # Generate checklist if equipment exists
+                    # Generate checklist
                     checklist = generate_checklist(equipment) if equipment else []
-
                     for item in checklist:
                         cur.execute(
                             'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
