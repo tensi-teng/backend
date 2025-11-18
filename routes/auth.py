@@ -27,7 +27,7 @@ def register():
 
     with get_conn() as conn:
         with conn.cursor() as cur:
-            # Check for existing user
+            # Check existing
             cur.execute(
                 "SELECT username, email, reg_number FROM users WHERE username=%s OR email=%s OR reg_number=%s",
                 (username, email, reg_number),
@@ -41,7 +41,7 @@ def register():
                 if existing[2] == reg_number:
                     return jsonify({"error": "Registration number already exists"}), 400
 
-            # Insert new user
+            # Insert user
             hashed_pw = generate_password_hash(password)
             cur.execute(
                 """
@@ -51,9 +51,9 @@ def register():
                 """,
                 (username, hashed_pw, name, reg_number, email),
             )
-            uid = str(cur.fetchone()[0])  # user ID as string
+            uid = str(cur.fetchone()[0])
 
-            # DEFAULT GESTURES
+            # Default gestures
             for g in DEFAULT_GESTURES:
                 cur.execute(
                     'INSERT INTO gestures (name, action, user_id) VALUES (%s, %s, %s)',
@@ -61,6 +61,7 @@ def register():
                 )
 
     return jsonify({'message': 'user registered', 'user_id': uid}), 201
+
 
 # LOGIN
 @auth_bp.route("/login", methods=["POST"])
@@ -78,10 +79,27 @@ def login():
             row = cur.fetchone()
             if not row or not check_password_hash(row[1], password):
                 return jsonify({'error': 'invalid credentials'}), 401
+
             uid = str(row[0])
 
-    token = create_access_token(identity=uid)
-    return jsonify({'token': token}), 200
+    # Include username + id in JWT token
+    token = create_access_token(identity={"id": uid, "username": username})
+
+    return jsonify({
+        'token': token,
+        'user': {
+            "id": uid,
+            "username": username
+        }
+    }), 200
+
+
+@auth_bp.route("/me", methods=["GET"])
+@jwt_required()
+def me():
+    user = get_jwt_identity()  # {"id": "...", "username": "..."}
+    return jsonify(user), 200
+
 
 # LOGOUT
 jwt_blacklist = set()
@@ -90,6 +108,6 @@ jwt_blacklist = set()
 @jwt_required()
 def logout():
     jti = get_jwt()["jti"]
-    user_id = get_jwt_identity()
+    user = get_jwt_identity()
     jwt_blacklist.add(jti)
-    return jsonify({"message": f"User {user_id} logged out successfully"}), 200
+    return jsonify({"message": f"User {user['username']} logged out successfully"}), 200
