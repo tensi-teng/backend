@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS public_workouts (
     name VARCHAR(100),
     muscles TEXT[],
     equipment TEXT,
+    description TEXT,
     instructions TEXT,
     level VARCHAR(20)
 );
@@ -34,7 +35,8 @@ CREATE TABLE IF NOT EXISTS workouts (
     description TEXT,
     equipment TEXT,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    image_url TEXT
 );
 
 -- SAVED PUBLIC WORKOUTS
@@ -44,6 +46,7 @@ CREATE TABLE IF NOT EXISTS saved_workouts (
     public_workout_id INTEGER REFERENCES public_workouts(id),
     name VARCHAR(120) NOT NULL,
     description TEXT,
+    instructions TEXT,
     equipment TEXT,
     type VARCHAR(50),
     muscles TEXT[],

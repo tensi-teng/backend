@@ -17,9 +17,7 @@ masked = f"{parts[0].split('://')[0]}://*****@{parts[1]}" if len(parts) > 1 else
 print(f"\nDATABASE_URL: {masked}")
 print("\n=== INITIALIZING DATABASE ===")
 
-
 # LOAD SCHEMA
-
 try:
     with open('db_init.sql', 'r') as file:
         init_sql = file.read()
@@ -28,9 +26,7 @@ except FileNotFoundError:
     print("✗ db_init.sql not found. Please make sure it’s in the same directory.")
     raise
 
-
 # CONNECT & INITIALIZE
-
 try:
     with psycopg.connect(DB_URL, autocommit=True) as conn:
         with conn.cursor() as cur:
@@ -40,9 +36,7 @@ try:
             cur.execute(init_sql)
             print("✓ Tables created successfully!")
 
-           
             # LOAD PUBLIC WORKOUTS
-         
             print("\n=== LOADING PUBLIC WORKOUTS ===")
             try:
                 with open('workouts.json', 'r') as f:
@@ -58,33 +52,64 @@ try:
             if workouts:
                 # Clear existing data
                 cur.execute("DELETE FROM public_workouts;")
-                print("✓ Cleared existing workouts from table.")
+                print("✓ Cleared existing workouts from public_workouts table.")
 
-                # Insert data
                 inserted = 0
-                for w in workouts:
-                    equipment_list = w.get('equipment') or []
-                    if not isinstance(equipment_list, list):
-                        equipment_list = [equipment_list]
-                    equipment_str = ','.join(equipment_list)
 
+                for w in workouts:
+                    # ----------------------------------------
+                    # SANITIZE EQUIPMENT → TEXT (comma string)
+                    # ----------------------------------------
+                    equipments = w.get('equipments') or []
+                    if isinstance(equipments, list):
+                        equipment_str = ",".join(equipments)
+                    else:
+                        equipment_str = str(equipments)
+
+                    # ----------------------------------------
+                    # SANITIZE MUSCLES → TEXT[]
+                    # ----------------------------------------
                     muscles = w.get('muscles') or []
                     if not isinstance(muscles, list):
                         muscles = [muscles]
 
-                    cur.execute("""
-                        INSERT INTO public_workouts
-                        (type, name, muscles, equipment, instructions, level)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                    """, (
-                        w.get('type'),
-                        w.get('name'),
-                        muscles,           # Stored as TEXT[] in Postgres
-                        equipment_str,
-                        w.get('instructions'),
-                        w.get('level')
-                    ))
-                    inserted += 1
+                    # ----------------------------------------
+                    # SANITIZE INSTRUCTIONS → TEXT
+                    # If array → join with new lines
+                    # ----------------------------------------
+                    instr = w.get('instructions') or ""
+                    if isinstance(instr, list):
+                        instr = "\n".join(instr)
+
+                    # ----------------------------------------
+                    # SANITIZE DESCRIPTION → TEXT
+                    # If array → join with new lines
+                    # ----------------------------------------
+                    desc = w.get('description') or ""
+                    if isinstance(desc, list):
+                        desc = "\n".join(desc)
+
+                    # INSERT
+                    try:
+                        cur.execute("""
+                            INSERT INTO public_workouts
+                            (type, name, muscles, equipment, description, instructions, level)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        """, (
+                            w.get('type'),
+                            w.get('name'),
+                            muscles,
+                            equipment_str,
+                            desc,
+                            instr,
+                            w.get('level')
+                        ))
+                        inserted += 1
+
+                    except Exception as err:
+                        print(f"✗ Failed inserting workout: {w.get('name')}")
+                        print("  Error:", err)
+                        continue
 
                 print(f"✓ Successfully inserted {inserted} workouts into public_workouts!")
 

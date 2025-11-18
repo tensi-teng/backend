@@ -5,6 +5,7 @@ from flasgger import Swagger
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 
+
 # Load .env file
 load_dotenv()
 

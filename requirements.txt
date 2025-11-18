@@ -5,4 +5,4 @@ flasgger
 flask-jwt-extended
 werkzeug
 gunicorn
-
+cloudinary
