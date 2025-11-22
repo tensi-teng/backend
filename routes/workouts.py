@@ -1,4 +1,5 @@
 import os
+import json      # <-- YOU FORGOT THIS (Critical fix)
 import psycopg
 from psycopg import sql
 from flask import Blueprint, request, jsonify
@@ -6,11 +7,11 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from db import get_conn
 from utils.generate_checklist import generate_checklist
 
-# Cloudinary
+# CLOUDINARY CONFIG
+
 import cloudinary
 import cloudinary.uploader
 
-# Configure Cloudinary (supports individual env vars or CLOUDINARY_URL)
 cloudinary.config(
     cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
     api_key=os.getenv('CLOUDINARY_API_KEY'),
@@ -20,87 +21,126 @@ cloudinary.config(
 
 workouts_bp = Blueprint('workouts', __name__)
 
-# Ensure workouts table has public_id column for Cloudinary asset management
-# This runs on module import; safe to run if migrations are not present.
+# Add public_id column if missing
 try:
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute("ALTER TABLE workouts ADD COLUMN IF NOT EXISTS public_id TEXT;")
+            cur.execute("""
+                ALTER TABLE workouts 
+                ADD COLUMN IF NOT EXISTS public_id TEXT;
+            """)
 except Exception:
-    # If DB is not ready at import time, we swallow this to avoid breaking import.
-    # Migration should be run separately if needed.
     pass
 
 
-# ---------------- CREATE USER WORKOUT ----------------
+# CREATE WORKOUT
+
 @workouts_bp.route('/workouts', methods=['POST'])
 @jwt_required()
 def create_workout():
     try:
-        data = request.get_json(silent=True) or {}
-        name = data.get('name')
-        if not name:
-            return jsonify({'error': 'name required'}), 400
-
-        description = data.get('description', '')
-        equipment = data.get('equipment', [])
         user_id = int(get_jwt_identity())
 
-        image_remote = data.get('image_url')  # optional remote url to fetch via Cloudinary at create time
-        uploaded_url = None
-        uploaded_public_id = None
+        # Detect multipart vs JSON
+        if request.content_type and "multipart/form-data" in request.content_type:
 
-        # If an image_url is provided in JSON, have Cloudinary fetch/upload it now.
-        if image_remote:
+            name = request.form.get("name")
+            if not name:
+                return jsonify({"error": "name required"}), 400
+
+            description = request.form.get("description", "")
+            raw_eq = request.form.get("equipment", "")
+
+            # Parse equipment correctly
             try:
-                uploaded = cloudinary.uploader.upload(
-                    image_remote,
-                    folder=f'workouts/{user_id}',
-                    use_filename=True,
-                    unique_filename=False,
-                    overwrite=False
-                )
-                uploaded_url = uploaded.get('secure_url') or uploaded.get('url')
-                uploaded_public_id = uploaded.get('public_id')
-            except Exception as e:
-                # do not fail the whole workout creation just because Cloudinary failed;
-                # return an error instead so caller can retry upload separately if preferred
-                return jsonify({'error': f'Cloudinary upload failed: {str(e)}'}), 500
+                if raw_eq and raw_eq.strip().startswith("["):
+                    equipment = json.loads(raw_eq)
+                else:
+                    equipment = [e.strip() for e in raw_eq.split(",") if e.strip()]
+            except Exception:
+                equipment = []
 
-        eq_str = ",".join(equipment) if isinstance(equipment, list) else (equipment or "")
+            fileobj = request.files.get("file")
+            uploaded_url = None
+            uploaded_public_id = None
+
+            # Upload file if exists
+            if fileobj:
+                try:
+                    uploaded = cloudinary.uploader.upload(
+                        fileobj,
+                        folder=f"workouts/{user_id}",
+                        use_filename=True,
+                        unique_filename=False
+                    )
+                    uploaded_url = uploaded.get("secure_url")
+                    uploaded_public_id = uploaded.get("public_id")
+
+                except Exception as e:
+                    return jsonify({"error": f"Cloudinary upload failed: {str(e)}"}), 500
+
+        else:
+            # JSON body
+            data = request.get_json(silent=True) or {}
+
+            name = data.get("name")
+            if not name:
+                return jsonify({"error": "name required"}), 400
+
+            description = data.get("description", "")
+            equipment = data.get("equipment", [])
+            image_remote = data.get("image_url")
+
+            uploaded_url = None
+            uploaded_public_id = None
+
+            if image_remote:
+                try:
+                    uploaded = cloudinary.uploader.upload(
+                        image_remote,
+                        folder=f"workouts/{user_id}",
+                        use_filename=True,
+                        unique_filename=False
+                    )
+                    uploaded_url = uploaded.get("secure_url")
+                    uploaded_public_id = uploaded.get("public_id")
+
+                except Exception as e:
+                    return jsonify({"error": f"Cloudinary upload failed: {str(e)}"}), 500
+
+        # Store in DB
+        eq_str = ",".join(equipment)
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    '''
+                cur.execute("""
                     INSERT INTO workouts (name, description, equipment, user_id, image_url, public_id)
-                    VALUES (%s,%s,%s,%s,%s,%s) RETURNING id
-                    ''',
-                    (name, description, eq_str, user_id, uploaded_url, uploaded_public_id)
-                )
+                    VALUES (%s,%s,%s,%s,%s,%s)
+                    RETURNING id
+                """, (name, description, eq_str, user_id, uploaded_url, uploaded_public_id))
+
                 wid = cur.fetchone()[0]
 
-                items = generate_checklist(equipment if isinstance(equipment, list) else [])
-                for it in items:
-                    cur.execute(
-                        'INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
-                        (it["task"], it["done"], wid)
-                    )
+                # Generate checklist
+                for it in generate_checklist(equipment):
+                    cur.execute("""
+                        INSERT INTO checklist_items (task, done, workout_id)
+                        VALUES (%s, %s, %s)
+                    """, (it["task"], it["done"], wid))
 
         return jsonify({
-            'message': 'created',
-            'workout': {
-                'id': wid,
-                'name': name,
-                'description': description,
-                'equipment': equipment,
-                'image_url': uploaded_url
+            "message": "created",
+            "workout": {
+                "id": wid,
+                "name": name,
+                "description": description,
+                "equipment": equipment,
+                "image_url": uploaded_url
             }
         }), 201
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+        return jsonify({"error": str(e)}), 500
 
 # ---------------- LIST USER WORKOUTS ----------------
 @workouts_bp.route('/workouts', methods=['GET'])

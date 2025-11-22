@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS workouts (
     equipment TEXT,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    image_url TEXT
+    image_url TEXT,
+    public_id TEXT 
 );
 
 -- SAVED PUBLIC WORKOUTS

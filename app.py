@@ -20,7 +20,9 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)
 # === Debug Print for Environment Variables ===
 db_url = os.getenv("DATABASE_URL")
 jwt_key = os.getenv("JWT_SECRET_KEY")
-api_key = os.getenv("API_KEY")
+cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+cloud_api_key = os.getenv("CLOUDINARY_API_KEY")
+cloud_api_secret = os.getenv("CLOUDINARY_API_SECRET")
 
 def mask(value):
     """Mask sensitive values for safe logging."""
@@ -29,6 +31,9 @@ def mask(value):
 print("\n=== Environment Variables Check ===")
 print("DATABASE_URL:", mask(db_url))
 print("JWT_SECRET_KEY:", mask(jwt_key))
+print("CLOUDINARY_CLOUD_NAME:", mask(cloud_name))
+print("CLOUDINARY_API_KEY:", mask(cloud_api_key))
+print("CLOUDINARY_API_SECRET:", mask(cloud_api_secret))
 print("-------------------\n")
 
 # JWT setup
