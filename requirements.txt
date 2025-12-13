@@ -6,3 +6,5 @@ flask-jwt-extended
 werkzeug
 gunicorn
 cloudinary
+# Paystack SDK
+paystackapi==2.0.0

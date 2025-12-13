@@ -57,9 +57,8 @@ try:
                 inserted = 0
 
                 for w in workouts:
-                    # ----------------------------------------
-                    # SANITIZE EQUIPMENT → TEXT (comma string)
-                    # ----------------------------------------
+                    
+                    
                     equipments = w.get('equipments') or []
                     if isinstance(equipments, list):
                         equipment_str = ",".join(equipments)
@@ -113,7 +112,7 @@ try:
 
                 print(f"✓ Successfully inserted {inserted} workouts into public_workouts!")
 
-    print("\n🎉 DATABASE INITIALIZED AND WORKOUTS LOADED SUCCESSFULLY!")
+    print("\n DATABASE INITIALIZED AND WORKOUTS LOADED SUCCESSFULLY!")
 
 except psycopg.Error as e:
     print(f"✗ Database error: {e}")
