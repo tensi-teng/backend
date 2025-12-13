@@ -39,7 +39,7 @@ except Exception:
 @jwt_required()
 def create_workout():
     try:
-        user_id = int(get_jwt_identity())
+        user_id = str(get_jwt_identity())
 
         # Detect multipart vs JSON
         if request.content_type and "multipart/form-data" in request.content_type:

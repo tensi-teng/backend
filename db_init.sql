@@ -71,3 +71,14 @@ CREATE TABLE IF NOT EXISTS gestures (
     action VARCHAR(200),
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS payments (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount NUMERIC(10,2) DEFAULT 0,  
+    currency VARCHAR(10) DEFAULT 'NGN',
+    status VARCHAR(20) DEFAULT 'pending', 
+    created_at TIMESTAMP DEFAULT NOW(),
+    paid_at TIMESTAMP NULL
+);
+
