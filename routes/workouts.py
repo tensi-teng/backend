@@ -9,44 +9,33 @@ from utils.generate_checklist import generate_checklist
 import cloudinary
 import cloudinary.uploader
 
+# ---------------- CLOUDINARY CONFIG ----------------
 cloudinary.config(
-    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-    api_key=os.getenv('CLOUDINARY_API_KEY'),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
-    secure=True
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True,
 )
 
-workouts_bp = Blueprint('workouts', __name__)
-
-# Add public_id column if missing
-try:
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("ALTER TABLE workouts ADD COLUMN IF NOT EXISTS public_id TEXT;")
-except Exception:
-    pass
-
+workouts_bp = Blueprint("workouts", __name__)
 
 # ---------------- CREATE WORKOUT ----------------
-@workouts_bp.route('/workouts', methods=['POST'])
+@workouts_bp.route("/workouts", methods=["POST"])
 @jwt_required()
 def create_workout():
     try:
-        # Validate JWT identity
-        user = get_jwt_identity()
-        if not isinstance(user, dict) or 'id' not in user:
-            return jsonify({"error": "Invalid JWT payload"}), 400
+        user_id_str = get_jwt_identity()     # JWT identity is STRING
+        user_id_int = int(user_id_str)       # DB needs INT
 
-        user_id_str = str(user['id'])
-        user_id_int = int(user['id'])
-
-        # Detect multipart vs JSON
+        # ---------- MULTIPART ----------
         if request.content_type and "multipart/form-data" in request.content_type:
             name = request.form.get("name")
             if not name:
                 return jsonify({"error": "name required"}), 400
+
             description = request.form.get("description", "")
             raw_eq = request.form.get("equipment", "")
+
             try:
                 if raw_eq.strip().startswith("["):
                     equipment = json.loads(raw_eq)
@@ -57,71 +46,77 @@ def create_workout():
 
             fileobj = request.files.get("file")
             uploaded_url = uploaded_public_id = None
+
             if fileobj:
                 uploaded = cloudinary.uploader.upload(
                     fileobj,
                     folder=f"workouts/{user_id_str}",
                     use_filename=True,
-                    unique_filename=False
+                    unique_filename=False,
                 )
                 uploaded_url = uploaded.get("secure_url")
                 uploaded_public_id = uploaded.get("public_id")
+
+        # ---------- JSON ----------
         else:
-            # Validate incoming JSON
             data = request.get_json(silent=True) or {}
             if not isinstance(data, dict):
                 return jsonify({"error": "Invalid JSON payload"}), 400
 
             name = data.get("name")
-            if not name or not isinstance(name, str):
-                return jsonify({"error": "Invalid or missing 'name'"}), 400
+            if not name:
+                return jsonify({"error": "name required"}), 400
 
             description = data.get("description", "")
-            if not isinstance(description, str):
-                return jsonify({"error": "Invalid 'description'"}), 400
-
             equipment = data.get("equipment", [])
-            if not isinstance(equipment, list):
-                return jsonify({"error": "Invalid 'equipment'"}), 400
 
-            image_remote = data.get("image_url")
+            if not isinstance(equipment, list):
+                return jsonify({"error": "equipment must be a list"}), 400
 
             uploaded_url = uploaded_public_id = None
+            image_remote = data.get("image_url")
+
             if image_remote:
                 uploaded = cloudinary.uploader.upload(
                     image_remote,
                     folder=f"workouts/{user_id_str}",
                     use_filename=True,
-                    unique_filename=False
+                    unique_filename=False,
                 )
                 uploaded_url = uploaded.get("secure_url")
                 uploaded_public_id = uploaded.get("public_id")
 
-        # Store workout with DB connection
+        # ---------- DB ----------
         with get_conn() as conn:
             with conn.cursor() as cur:
                 # Payment check
                 cur.execute(
                     "SELECT COUNT(*) FROM payments WHERE user_id=%s AND status='success'",
-                    (user_id_int,)
+                    (user_id_int,),
                 )
-                payment_count = cur.fetchone()[0]
-                if payment_count == 0:
-                    return jsonify({"error": "No active payment found."}), 403
+                if cur.fetchone()[0] == 0:
+                    return jsonify({"error": "No active payment found"}), 403
 
-                # Insert workout
                 eq_str = ",".join(equipment)
-                cur.execute("""
+
+                cur.execute(
+                    """
                     INSERT INTO workouts (name, description, equipment, user_id, image_url, public_id)
-                    VALUES (%s,%s,%s,%s,%s,%s) RETURNING id
-                """, (name, description, eq_str, user_id_int, uploaded_url, uploaded_public_id))
+                    VALUES (%s,%s,%s,%s,%s,%s)
+                    RETURNING id
+                    """,
+                    (name, description, eq_str, user_id_int, uploaded_url, uploaded_public_id),
+                )
+
                 wid = cur.fetchone()[0]
 
-                # Generate checklist
                 for it in generate_checklist(equipment):
                     cur.execute(
-                        "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)",
-                        (it["task"], it["done"], wid)
+                        """
+                        INSERT INTO checklist_items (task, done, workout_id)
+                        VALUES (%s,%s,%s)
+                        """,
+                        (it["task"], it["done"], wid),
                     )
 
         return jsonify({
@@ -131,8 +126,8 @@ def create_workout():
                 "name": name,
                 "description": description,
                 "equipment": equipment,
-                "image_url": uploaded_url
-            }
+                "image_url": uploaded_url,
+            },
         }), 201
 
     except Exception as e:
@@ -140,289 +135,152 @@ def create_workout():
 
 
 # ---------------- LIST WORKOUTS ----------------
-@workouts_bp.route('/workouts', methods=['GET'])
+@workouts_bp.route("/workouts", methods=["GET"])
 @jwt_required()
 def list_workouts():
     try:
-        user_id_int = int(get_jwt_identity()['id'])
+        user_id_int = int(get_jwt_identity())
         workouts = []
 
         with get_conn() as conn:
             with conn.cursor(row_factory=rows.dict_row) as cur:
-                for table in ['workouts', 'saved_workouts']:
+                for table in ["workouts", "saved_workouts"]:
                     cur.execute(
-                        f"SELECT id, name, description, equipment, image_url FROM {table} WHERE user_id=%s ORDER BY id DESC",
-                        (user_id_int,)
+                        f"""
+                        SELECT id, name, description, equipment, image_url
+                        FROM {table}
+                        WHERE user_id=%s
+                        ORDER BY id DESC
+                        """,
+                        (user_id_int,),
                     )
                     workouts.extend(cur.fetchall())
 
-        out = []
-        for r in workouts:
-            eq = [e.strip() for e in (r['equipment'] or "").split(",") if e]
-            out.append({
-                'id': r['id'],
-                'name': r['name'],
-                'description': r.get('description'),
-                'equipment': eq,
-                'image_url': r.get('image_url')
-            })
-        return jsonify(out), 200
+        return jsonify([
+            {
+                "id": w["id"],
+                "name": w["name"],
+                "description": w["description"],
+                "equipment": [e for e in (w["equipment"] or "").split(",") if e],
+                "image_url": w["image_url"],
+            }
+            for w in workouts
+        ]), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- UPDATE WORKOUT ----------------
-@workouts_bp.route('/workouts/<int:wid>', methods=['PUT'])
+@workouts_bp.route("/workouts/<int:wid>", methods=["PUT"])
 @jwt_required()
 def update_workout(wid):
     try:
         data = request.get_json(silent=True) or {}
-        user_id_int = int(get_jwt_identity()['id'])
-
-        name = data.get('name')
-        description = data.get('description')
-        equipment = data.get('equipment')
+        user_id_int = int(get_jwt_identity())
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute('SELECT user_id FROM workouts WHERE id=%s', (wid,))
+                cur.execute("SELECT user_id FROM workouts WHERE id=%s", (wid,))
                 row = cur.fetchone()
-                table = 'workouts'
+                table = "workouts"
+
                 if not row:
-                    cur.execute('SELECT user_id FROM saved_workouts WHERE id=%s', (wid,))
+                    cur.execute("SELECT user_id FROM saved_workouts WHERE id=%s", (wid,))
                     row = cur.fetchone()
-                    table = 'saved_workouts'
+                    table = "saved_workouts"
+
+                # Check fetchone() result
+                result = cur.fetchone()
+                if result is None:
+                    return jsonify({"error": "No workout found"}), 404
+                workout_id = result[0]
+
+                # Use psycopg.sql for dynamic queries
+                from psycopg.sql import SQL, Identifier
+                query = SQL("SELECT * FROM workouts WHERE id = %s")
+                cur.execute(query, (workout_id,))
+
+                # Validate fetchone() result
+                row = cur.fetchone()
+                if row is None:
+                    return jsonify({"error": "Workout not found"}), 404
+
+                # Correct dynamic query usage
+                table_query = SQL("SELECT id, name, description, equipment, image_url FROM {table} WHERE user_id=%s").format(table=Identifier(table))
+                cur.execute(table_query, (user_id,))
+
+                # Ensure user_id is defined
+                user_id = request.args.get("user_id")
+                if not user_id:
+                    return jsonify({"error": "User ID is required"}), 400
 
                 if not row or row[0] != user_id_int:
-                    return jsonify({'error': 'not found or not allowed'}), 404
+                    return jsonify({"error": "not allowed"}), 404
 
-                if name:
-                    cur.execute(sql.SQL("UPDATE {tbl} SET name=%s WHERE id=%s").format(tbl=sql.Identifier(table)), (name, wid))
-                if description is not None:
-                    cur.execute(sql.SQL("UPDATE {tbl} SET description=%s WHERE id=%s").format(tbl=sql.Identifier(table)), (description, wid))
-                if equipment is not None:
-                    eq_str = ",".join(equipment) if isinstance(equipment, list) else (equipment or "")
-                    cur.execute(sql.SQL("UPDATE {tbl} SET equipment=%s WHERE id=%s").format(tbl=sql.Identifier(table)), (eq_str, wid))
-                    cur.execute('DELETE FROM checklist_items WHERE workout_id=%s', (wid,))
-                    for it in generate_checklist(equipment if isinstance(equipment, list) else []):
-                        cur.execute('INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)',
-                                    (it["task"], it["done"], wid))
+                if "name" in data:
+                    cur.execute(
+                        sql.SQL("UPDATE {t} SET name=%s WHERE id=%s")
+                        .format(t=sql.Identifier(table)),
+                        (data["name"], wid),
+                    )
 
-        return jsonify({'message': 'updated'}), 200
+                if "description" in data:
+                    cur.execute(
+                        sql.SQL("UPDATE {t} SET description=%s WHERE id=%s")
+                        .format(t=sql.Identifier(table)),
+                        (data["description"], wid),
+                    )
+
+                if "equipment" in data:
+                    eq = ",".join(data["equipment"])
+                    cur.execute(
+                        sql.SQL("UPDATE {t} SET equipment=%s WHERE id=%s")
+                        .format(t=sql.Identifier(table)),
+                        (eq, wid),
+                    )
+
+                    cur.execute("DELETE FROM checklist_items WHERE workout_id=%s", (wid,))
+                    for it in generate_checklist(data["equipment"]):
+                        cur.execute(
+                            "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)",
+                            (it["task"], it["done"], wid),
+                        )
+
+        return jsonify({"message": "updated"}), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- DELETE WORKOUT(S) ----------------
-@workouts_bp.route('/workouts/<wid>', methods=['DELETE'])
+@workouts_bp.route("/workouts/<wid>", methods=["DELETE"])
 @jwt_required()
 def delete_workout(wid):
     try:
-        user_id_int = int(get_jwt_identity()['id'])
-        ids_to_delete = []
+        user_id_int = int(get_jwt_identity())
+        ids = []
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                if isinstance(wid, str) and wid.lower() == 'all':
-                    for table in ['workouts', 'saved_workouts']:
-                        cur.execute(f"SELECT id FROM {table} WHERE user_id=%s", (user_id_int,))
-                        ids_to_delete.extend([r[0] for r in cur.fetchall()])
+                if wid.lower() == "all":
+                    for table in ["workouts", "saved_workouts"]:
+                        cur.execute(
+                            f"SELECT id FROM {table} WHERE user_id=%s",
+                            (user_id_int,),
+                        )
+                        ids.extend([r[0] for r in cur.fetchall()])
                 else:
-                    ids = [int(w.strip()) for w in wid.split(',')]
-                    for table in ['workouts', 'saved_workouts']:
-                        cur.execute(f"SELECT id FROM {table} WHERE id = ANY(%s) AND user_id=%s", (ids, user_id_int))
-                        ids_to_delete.extend([r[0] for r in cur.fetchall()])
+                    ids = [int(x) for x in wid.split(",")]
 
-                if not ids_to_delete:
-                    return jsonify({'message': 'nothing to delete'}), 200
+                if not ids:
+                    return jsonify({"message": "nothing to delete"}), 200
 
-                cur.execute('SELECT public_id FROM workouts WHERE id = ANY(%s)', (ids_to_delete,))
-                for pid_row in cur.fetchall():
-                    pid = pid_row[0]
-                    if pid:
-                        try:
-                            cloudinary.uploader.destroy(pid, invalidate=True)
-                        except Exception:
-                            pass
+                cur.execute("DELETE FROM checklist_items WHERE workout_id = ANY(%s)", (ids,))
+                cur.execute("DELETE FROM workouts WHERE id = ANY(%s)", (ids,))
+                cur.execute("DELETE FROM saved_workouts WHERE id = ANY(%s)", (ids,))
 
-                for table in ['workouts', 'saved_workouts']:
-                    cur.execute(f'DELETE FROM {table} WHERE id = ANY(%s)', (ids_to_delete,))
-                cur.execute('DELETE FROM checklist_items WHERE workout_id = ANY(%s)', (ids_to_delete,))
-
-        return jsonify({'message': 'deleted', 'deleted_ids': ids_to_delete}), 200
+        return jsonify({"message": "deleted", "ids": ids}), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-# ---------------- TOGGLE CHECKLIST ITEM(S) ----------------
-@workouts_bp.route('/checklist/<item_id>', methods=['PATCH'])
-@jwt_required()
-def toggle_checklist_item(item_id):
-    try:
-        user_id_int = int(get_jwt_identity()['id'])
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                if isinstance(item_id, str) and item_id.lower() == 'all':
-                    cur.execute('''
-                        SELECT ci.id, ci.done
-                        FROM checklist_items ci
-                        JOIN workouts w ON ci.workout_id = w.id
-                        WHERE w.user_id=%s
-                        UNION
-                        SELECT ci.id, ci.done
-                        FROM checklist_items ci
-                        JOIN saved_workouts sw ON ci.workout_id = sw.id
-                        WHERE sw.user_id=%s
-                    ''', (user_id_int, user_id_int))
-                    items = cur.fetchall()
-                else:
-                    ids = [int(i.strip()) for i in item_id.split(',')]
-                    cur.execute('''
-                        SELECT ci.id, ci.done
-                        FROM checklist_items ci
-                        JOIN workouts w ON ci.workout_id = w.id
-                        WHERE ci.id = ANY(%s) AND w.user_id=%s
-                        UNION
-                        SELECT ci.id, ci.done
-                        FROM checklist_items ci
-                        JOIN saved_workouts sw ON ci.workout_id = sw.id
-                        WHERE ci.id = ANY(%s) AND sw.user_id=%s
-                    ''', (ids, user_id_int, ids, user_id_int))
-                    items = cur.fetchall()
-
-                if not items:
-                    return jsonify({'message': 'no items found'}), 404
-
-                toggled = []
-                for cid, done in items:
-                    new_done = not done
-                    cur.execute('UPDATE checklist_items SET done=%s WHERE id=%s', (new_done, cid))
-                    toggled.append({'id': cid, 'done': new_done})
-
-        return jsonify({'message': 'toggled', 'toggled_items': toggled}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-# ---------------- LIST ALL CHECKLIST ITEMS ----------------
-@workouts_bp.route('/checklist', methods=['GET'])
-@jwt_required()
-def list_all_checklist_items():
-    try:
-        user_id_int = int(get_jwt_identity()['id'])
-        all_items = []
-
-        with get_conn() as conn:
-            with conn.cursor(row_factory=rows.dict_row) as cur:
-                for table in ['workouts', 'saved_workouts']:
-                    query = sql.SQL('''
-                        SELECT ci.id, ci.task, ci.done, ci.workout_id, w.name AS workout_name
-                        FROM checklist_items ci
-                        JOIN {tbl} w ON ci.workout_id = w.id
-                        WHERE w.user_id=%s
-                    ''').format(tbl=sql.Identifier(table))
-                    cur.execute(query, (user_id_int,))
-                    all_items.extend(cur.fetchall())
-
-        return jsonify(all_items), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-# ---------------- ADD / REPLACE IMAGE ----------------
-@workouts_bp.route('/workouts/<int:wid>/image', methods=['POST'])
-@jwt_required()
-def add_or_replace_workout_image(wid):
-    try:
-        user_id_int = int(get_jwt_identity()['id'])
-        user_id_str = str(user_id_int)
-
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute('SELECT user_id, public_id FROM workouts WHERE id=%s', (wid,))
-                row = cur.fetchone()
-                table = 'workouts'
-                existing_public_id = None
-                if not row:
-                    cur.execute('SELECT user_id FROM saved_workouts WHERE id=%s', (wid,))
-                    row = cur.fetchone()
-                    table = 'saved_workouts'
-                if not row or row[0] != user_id_int:
-                    return jsonify({'error': 'not found or not allowed'}), 404
-                if table == 'workouts':
-                    cur.execute('SELECT public_id FROM workouts WHERE id=%s', (wid,))
-                    pid_row = cur.fetchone()
-                    existing_public_id = pid_row[0] if pid_row else None
-
-        fileobj = request.files.get('file')
-        if fileobj:
-            uploaded = cloudinary.uploader.upload(
-                fileobj,
-                folder=f'workouts/{user_id_str}',
-                use_filename=True,
-                unique_filename=False
-            )
-        else:
-            data = request.get_json(silent=True) or {}
-            image_url = data.get('image_url')
-            if not image_url:
-                return jsonify({'error': 'file or image_url required'}), 400
-            uploaded = cloudinary.uploader.upload(
-                image_url,
-                folder=f'workouts/{user_id_str}',
-                use_filename=True,
-                unique_filename=False
-            )
-
-        image_url = uploaded.get('secure_url') or uploaded.get('url')
-        public_id = uploaded.get('public_id')
-
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute('UPDATE workouts SET image_url=%s, public_id=%s WHERE id=%s',
-                            (image_url, public_id, wid))
-
-        if existing_public_id:
-            try:
-                cloudinary.uploader.destroy(existing_public_id, invalidate=True)
-            except Exception:
-                pass
-
-        return jsonify({'message': 'image added', 'image_url': image_url}), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-# ---------------- DELETE IMAGE ----------------
-@workouts_bp.route('/workouts/<int:wid>/image', methods=['DELETE'])
-@jwt_required()
-def delete_workout_image(wid):
-    try:
-        user_id_int = int(get_jwt_identity()['id'])
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute('''
-                    SELECT w.public_id, w.user_id
-                    FROM workouts w WHERE w.id=%s
-                    UNION
-                    SELECT NULL AS public_id, sw.user_id
-                    FROM saved_workouts sw WHERE sw.id=%s
-                ''', (wid, wid))
-                row = cur.fetchone()
-                if not row or row[1] != user_id_int:
-                    return jsonify({'error': 'not found or not allowed'}), 404
-                public_id = row[0]
-                cur.execute('UPDATE workouts SET image_url=NULL, public_id=NULL WHERE id=%s', (wid,))
-
-        if public_id:
-            try:
-                cloudinary.uploader.destroy(public_id, invalidate=True)
-            except Exception:
-                pass
-
-        return jsonify({'message': 'image deleted'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
