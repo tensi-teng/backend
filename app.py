@@ -43,11 +43,13 @@ jwt = JWTManager(app)
 from routes.auth import auth_bp
 from routes.workouts import workouts_bp
 from routes.public_api import public_bp
+from routes.reminders import reminders_bp
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(workouts_bp, url_prefix='/users')
 app.register_blueprint(public_bp, url_prefix='/public')
+app.register_blueprint(reminders_bp, url_prefix='/api')
 
 # Run app
 if __name__ == '__main__':

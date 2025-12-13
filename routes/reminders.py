@@ -1,0 +1,49 @@
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from db import get_conn
+
+reminders_bp = Blueprint('reminders', __name__)
+
+@reminders_bp.route('/reminders', methods=['POST'])
+@jwt_required()
+def create_reminder():
+    """
+    Endpoint to collect time data for reminders from the frontend.
+    """
+    try:
+        user_id = str(get_jwt_identity())
+        data = request.get_json() or {}
+
+        # Validate input data
+        reminder_time = data.get('time')
+        if not reminder_time or not isinstance(reminder_time, str):
+            return jsonify({"error": "Invalid or missing 'time'. It must be a string."}), 400
+
+        description = data.get('description', '')
+        if not isinstance(description, str):
+            return jsonify({"error": "Invalid 'description'. It must be a string."}), 400
+
+        # Store reminder in the database
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO reminders (user_id, time, description)
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                    """,
+                    (user_id, reminder_time, description)
+                )
+                reminder_id = cur.fetchone()[0]
+
+        return jsonify({
+            "message": "Reminder created successfully",
+            "reminder": {
+                "id": reminder_id,
+                "time": reminder_time,
+                "description": description
+            }
+        }), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
