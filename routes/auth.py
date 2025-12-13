@@ -82,8 +82,11 @@ def login():
 
             uid = str(row[0])
 
-    # Include username + id in JWT token
-    token = create_access_token(identity={"id": uid, "username": username})
+    # identity must be string; extra info in additional_claims
+    token = create_access_token(
+        identity=uid,
+        additional_claims={"username": username}
+    )
 
     return jsonify({
         'token': token,
@@ -94,11 +97,14 @@ def login():
     }), 200
 
 
+# GET CURRENT USER
 @auth_bp.route("/me", methods=["GET"])
 @jwt_required()
 def me():
-    user = get_jwt_identity()  # {"id": "...", "username": "..."}
-    return jsonify(user), 200
+    user_id = get_jwt_identity()  # string ID
+    claims = get_jwt()            # dictionary of additional_claims
+    username = claims.get("username")
+    return jsonify({"id": user_id, "username": username}), 200
 
 
 # LOGOUT
@@ -108,6 +114,8 @@ jwt_blacklist = set()
 @jwt_required()
 def logout():
     jti = get_jwt()["jti"]
-    user = get_jwt_identity()
+    user_id = get_jwt_identity()
+    claims = get_jwt()
+    username = claims.get("username")
     jwt_blacklist.add(jti)
-    return jsonify({"message": f"User {user['username']} logged out successfully"}), 200
+    return jsonify({"message": f"User {username} logged out successfully"}), 200
