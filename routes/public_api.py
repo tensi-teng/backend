@@ -249,3 +249,29 @@ def save_public_workouts(public_workout_id=None):
     except Exception as e:
         current_app.logger.exception("Save workout failed")
         return jsonify({"error": str(e)}), 500
+
+
+# Dummy Paystack Payment Integration
+@public_bp.route('/paystack/dummy-payment', methods=['POST'])
+def dummy_paystack_payment():
+    data = request.get_json()
+
+    # Validate request payload
+    if not data or 'email' not in data or 'amount' not in data:
+        return jsonify({"error": "Email and amount are required"}), 400
+
+    email = data['email']
+    amount = data['amount']
+
+    # Simulate Paystack payment initialization
+    paystack_response = {
+        "status": True,
+        "message": "Payment initialized successfully",
+        "data": {
+            "authorization_url": "https://paystack.com/dummy-authorization",
+            "access_code": "DUMMY_ACCESS_CODE",
+            "reference": "DUMMY_REFERENCE"
+        }
+    }
+
+    return jsonify(paystack_response), 200
