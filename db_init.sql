@@ -79,8 +79,10 @@ CREATE TABLE IF NOT EXISTS payments (
     currency VARCHAR(10) DEFAULT 'NGN',
     status VARCHAR(20) DEFAULT 'pending', 
     created_at TIMESTAMP DEFAULT NOW(),
-    paid_at TIMESTAMP NULL
+    paid_at TIMESTAMP NULL,
+    type VARCHAR(50) DEFAULT 'subscription'  -- Add type column
 );
+
 
 -- REMINDERS TABLE
 CREATE TABLE IF NOT EXISTS reminders (
