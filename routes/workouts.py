@@ -23,27 +23,33 @@ workouts_bp = Blueprint("workouts", __name__)
 def create_workout():
     try:
         user_id = int(get_jwt_identity())
-        data = request.get_json(silent=True) or {}
 
-        # Handle multipart form data or JSON
-        if request.content_type and "multipart/form-data" in request.content_type:
-            name = request.form.get("name")
-            description = request.form.get("description", "")
-            raw_eq = request.form.get("equipment", "")
-            equipment = [e.strip() for e in raw_eq.split(",") if e.strip()]
-            fileobj = request.files.get("file")
-        else:
+        # Default values
+        name = description = None
+        equipment = []
+        fileobj = None
+
+        # --- JSON payload ---
+        if request.is_json:
+            data = request.get_json()
             name = data.get("name")
             description = data.get("description", "")
             equipment = data.get("equipment", [])
-            fileobj = None
+
+        # --- multipart/form-data payload ---
+        if request.content_type and "multipart/form-data" in request.content_type:
+            name = request.form.get("name") or name
+            description = request.form.get("description") or description
+            raw_eq = request.form.get("equipment")
+            if raw_eq:
+                equipment = [e.strip() for e in raw_eq.split(",") if e.strip()]
+            fileobj = request.files.get("file")
 
         if not name:
             return jsonify({"error": "name required"}), 400
 
-        # Upload image if present
-        image_url = None
-        public_id = None
+        # --- Upload image if present ---
+        image_url = public_id = None
         if fileobj:
             uploaded = cloudinary.uploader.upload(
                 fileobj, folder=f"workouts/{user_id}", resource_type="image"
@@ -51,9 +57,10 @@ def create_workout():
             image_url = uploaded["secure_url"]
             public_id = uploaded["public_id"]
 
+        # --- DB operations ---
         with get_conn() as conn:
             with conn.cursor() as cur:
-                # ---------------- SUBSCRIPTION CHECK ----------------
+                # Subscription check
                 cur.execute(
                     """
                     SELECT 1 FROM payments 
@@ -86,7 +93,6 @@ def create_workout():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # ---------------- LIST WORKOUTS ----------------
 @workouts_bp.route("/workouts", methods=["GET"])
@@ -132,7 +138,6 @@ def list_workouts():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 # ---------------- UPDATE WORKOUT ----------------
 @workouts_bp.route("/workouts/<int:workout_id>", methods=["PUT"])
 @jwt_required()
@@ -173,7 +178,6 @@ def update_workout(workout_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 # ---------------- DELETE WORKOUT ----------------
 @workouts_bp.route("/workouts/<wid>", methods=["DELETE"])
 @jwt_required()
@@ -201,7 +205,6 @@ def delete_workout(wid):
         return jsonify({"message": "deleted"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # ---------------- TOGGLE CHECKLIST ----------------
 @workouts_bp.route("/workouts/<int:workout_id>/checklist", methods=["PATCH"])
@@ -231,7 +234,6 @@ def toggle_checklist(workout_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 # ---------------- DUMMY PAYSTACK PAYMENT / SUBSCRIPTION ----------------
 @workouts_bp.route("/paystack/dummy-payment", methods=["POST"])
 @jwt_required()
@@ -244,10 +246,9 @@ def paystack_dummy_payment():
         if not email:
             return jsonify({"error": "Email is required"}), 400
 
-        # ---- FIXED SUBSCRIPTION AMOUNT ----
+        # Fixed subscription amount
         fixed_amount = 5000  # Naira
-
-        payment_type = "subscription"  # since it's a fixed subscription
+        payment_type = "subscription"
 
         # Save dummy payment in DB
         with get_conn() as conn:
