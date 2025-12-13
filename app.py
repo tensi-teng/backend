@@ -8,6 +8,8 @@ from datetime import timedelta
 
 # Load .env file
 load_dotenv()
+PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -34,6 +36,7 @@ print("JWT_SECRET_KEY:", mask(jwt_key))
 print("CLOUDINARY_CLOUD_NAME:", mask(cloud_name))
 print("CLOUDINARY_API_KEY:", mask(cloud_api_key))
 print("CLOUDINARY_API_SECRET:", mask(cloud_api_secret))
+print("PAYSTACK_SECRET_KEY:", mask(PAYSTACK_SECRET_KEY))
 print("-------------------\n")
 
 # JWT setup
