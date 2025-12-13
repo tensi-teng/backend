@@ -11,10 +11,16 @@ def create_reminder():
     Endpoint to collect time data for reminders from the frontend.
     """
     try:
-        user_id = str(get_jwt_identity())
-        data = request.get_json() or {}
+        # Validate JWT identity
+        user_id = get_jwt_identity()
+        if not isinstance(user_id, str):
+            return jsonify({"error": "Invalid JWT payload"}), 400
 
-        # Validate input data
+        # Validate incoming JSON
+        data = request.get_json() or {}
+        if not isinstance(data, dict):
+            return jsonify({"error": "Invalid JSON payload"}), 400
+
         reminder_time = data.get('time')
         if not reminder_time or not isinstance(reminder_time, str):
             return jsonify({"error": "Invalid or missing 'time'. It must be a string."}), 400

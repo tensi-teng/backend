@@ -32,7 +32,11 @@ except Exception:
 @jwt_required()
 def create_workout():
     try:
+        # Validate JWT identity
         user = get_jwt_identity()
+        if not isinstance(user, dict) or 'id' not in user:
+            return jsonify({"error": "Invalid JWT payload"}), 400
+
         user_id_str = str(user['id'])
         user_id_int = int(user['id'])
 
@@ -63,12 +67,23 @@ def create_workout():
                 uploaded_url = uploaded.get("secure_url")
                 uploaded_public_id = uploaded.get("public_id")
         else:
+            # Validate incoming JSON
             data = request.get_json(silent=True) or {}
+            if not isinstance(data, dict):
+                return jsonify({"error": "Invalid JSON payload"}), 400
+
             name = data.get("name")
-            if not name:
-                return jsonify({"error": "name required"}), 400
+            if not name or not isinstance(name, str):
+                return jsonify({"error": "Invalid or missing 'name'"}), 400
+
             description = data.get("description", "")
+            if not isinstance(description, str):
+                return jsonify({"error": "Invalid 'description'"}), 400
+
             equipment = data.get("equipment", [])
+            if not isinstance(equipment, list):
+                return jsonify({"error": "Invalid 'equipment'"}), 400
+
             image_remote = data.get("image_url")
 
             uploaded_url = uploaded_public_id = None
@@ -81,14 +96,6 @@ def create_workout():
                 )
                 uploaded_url = uploaded.get("secure_url")
                 uploaded_public_id = uploaded.get("public_id")
-
-        # Validate input types
-        if not isinstance(name, str):
-            return jsonify({"error": "Invalid 'name'"}), 400
-        if not isinstance(description, str):
-            return jsonify({"error": "Invalid 'description'"}), 400
-        if not isinstance(equipment, list):
-            return jsonify({"error": "Invalid 'equipment'"}), 400
 
         # Store workout with DB connection
         with get_conn() as conn:
