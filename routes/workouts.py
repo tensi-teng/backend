@@ -43,6 +43,10 @@ def create_workout():
             description = data.get("description", "")
             equipment = data.get("equipment", [])
 
+        # Ensure name is retrieved correctly for both JSON and form-data
+        if not name:
+            name = request.form.get("name") if request.content_type and "multipart/form-data" in request.content_type else None
+
         if not name:
             return jsonify({"error": "name required"}), 400
 
@@ -80,6 +84,9 @@ def create_workout():
                         "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)",
                         (item["task"], item["done"], workout_id),
                     )
+
+        # Ensure database transaction is committed properly
+        conn.commit()
 
         return jsonify({"message": "created", "workout_id": workout_id}), 201
 
@@ -137,6 +144,10 @@ def update_workout(workout_id):
         user_id = int(get_jwt_identity())
         data = request.get_json(silent=True) or {}
 
+        # Ensure the object is valid before accessing
+        if not data:
+            return jsonify({"error": "Invalid request payload"}), 400
+
         with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT user_id FROM workouts WHERE id=%s", (workout_id,))
@@ -159,6 +170,9 @@ def update_workout(workout_id):
                             "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)",
                             (item["task"], item["done"], workout_id),
                         )
+
+        # Ensure database transaction is committed properly
+        conn.commit()
 
         return jsonify({"message": "updated"}), 200
     except Exception as e:
@@ -195,7 +209,13 @@ def delete_workout(wid):
 def toggle_checklist(workout_id):
     try:
         user_id = int(get_jwt_identity())
-        item_ids = request.get_json(silent=True).get("item_ids", [])
+
+        # Ensure the JSON payload is valid before accessing 'get'
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"error": "Invalid JSON payload"}), 400
+
+        item_ids = data.get("item_ids", [])
 
         if not isinstance(item_ids, list):
             return jsonify({"error": "item_ids must be a list"}), 400
@@ -240,13 +260,18 @@ def paystack_dummy_payment():
                     """,
                     (user_id, fixed_amount, "NGN", "success", payment_type),
                 )
-                payment = cur.fetchone()
+                # Validate fetchone() result before accessing
+                result = cur.fetchone()
+                if not result:
+                    return jsonify({"error": "No workout found"}), 404
+
+                workout_id = result[0]
 
         return jsonify({
             "status": True,
-            "message": f"{payment_type.capitalize()} payment of NGN {payment[1]} successful",
+            "message": f"{payment_type.capitalize()} payment of NGN {result[1]} successful",
             "data": {
-                "payment_id": payment[0],
+                "payment_id": result[0],
                 "reference": "DUMMY_SUB_REFERENCE",
                 "authorization_url": "https://paystack.com/dummy-authorization",
             },
