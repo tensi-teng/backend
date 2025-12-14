@@ -23,35 +23,36 @@ workouts_bp = Blueprint("workouts", __name__)
 def create_workout():
     try:
         user_id = int(get_jwt_identity())
-        name = description = None
+        name = None
+        description = ""
         equipment = []
         fileobj = None
 
-        # Handle form-data first
+        # Prioritize form data (used when uploading files - multipart/form-data)
         if request.form:
             name = request.form.get("name")
-            description = request.form.get("description", "")
+            description = request.form.get("description", "").strip()
             raw_eq = request.form.get("equipment")
             if raw_eq:
                 equipment = [e.strip() for e in raw_eq.split(",") if e.strip()]
             fileobj = request.files.get("file")
 
-        # Fallback to JSON payload
-        elif request.is_json:
+        # Fallback to JSON if no name yet (pure JSON request)
+        if not name and request.is_json:
             data = request.get_json()
             name = data.get("name")
-            description = data.get("description", "")
-            equipment = data.get("equipment", [])
+            description = data.get("description", "").strip()
+            equipment = data.get("equipment", []) or []
 
-        # Ensure name is retrieved correctly for both JSON and form-data
-        if not name:
-            name = request.form.get("name") if request.content_type and "multipart/form-data" in request.content_type else None
-
-        if not name:
+        # Final validation
+        if not name or not name.strip():
             return jsonify({"error": "name required"}), 400
 
+        name = name.strip()
+
+        # Upload image if provided
         image_url = public_id = None
-        if fileobj:
+        if fileobj and fileobj.filename != "":
             uploaded = cloudinary.uploader.upload(
                 fileobj, folder=f"workouts/{user_id}", resource_type="image"
             )
@@ -72,21 +73,20 @@ def create_workout():
                 cur.execute(
                     """
                     INSERT INTO workouts (name, description, equipment, user_id, image_url, public_id)
-                    VALUES (%s,%s,%s,%s,%s,%s) RETURNING id
+                    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
                     """,
                     (name, description, ",".join(equipment), user_id, image_url, public_id),
                 )
                 workout_id = cur.fetchone()[0]
 
-                # Generate checklist
+                # Generate checklist items
                 for item in generate_checklist(equipment):
                     cur.execute(
-                        "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)",
+                        "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s, %s, %s)",
                         (item["task"], item["done"], workout_id),
                     )
 
-        # Ensure database transaction is committed properly
-        conn.commit()
+            conn.commit()
 
         return jsonify({"message": "created", "workout_id": workout_id}), 201
 
@@ -144,7 +144,6 @@ def update_workout(workout_id):
         user_id = int(get_jwt_identity())
         data = request.get_json(silent=True) or {}
 
-        # Ensure the object is valid before accessing
         if not data:
             return jsonify({"error": "Invalid request payload"}), 400
 
@@ -171,8 +170,7 @@ def update_workout(workout_id):
                             (item["task"], item["done"], workout_id),
                         )
 
-        # Ensure database transaction is committed properly
-        conn.commit()
+            conn.commit()
 
         return jsonify({"message": "updated"}), 200
     except Exception as e:
@@ -199,6 +197,8 @@ def delete_workout(wid):
                     cur.execute("DELETE FROM workouts WHERE id = ANY(%s) AND user_id=%s", (ids, user_id))
                     cur.execute("DELETE FROM saved_workouts WHERE id = ANY(%s) AND user_id=%s", (ids, user_id))
 
+            conn.commit()
+
         return jsonify({"message": "deleted"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -209,14 +209,11 @@ def delete_workout(wid):
 def toggle_checklist(workout_id):
     try:
         user_id = int(get_jwt_identity())
-
-        # Ensure the JSON payload is valid before accessing 'get'
         data = request.get_json(silent=True)
         if not data:
             return jsonify({"error": "Invalid JSON payload"}), 400
 
         item_ids = data.get("item_ids", [])
-
         if not isinstance(item_ids, list):
             return jsonify({"error": "item_ids must be a list"}), 400
 
@@ -226,11 +223,14 @@ def toggle_checklist(workout_id):
                 row = cur.fetchone()
                 if not row or row[0] != user_id:
                     return jsonify({"error": "Not allowed"}), 403
+
                 cur.execute(
                     "UPDATE checklist_items SET done = NOT done WHERE workout_id=%s AND id = ANY(%s) RETURNING id, done",
                     (workout_id, item_ids),
                 )
                 results = cur.fetchall()
+
+            conn.commit()
 
         return jsonify({"updated": len(results), "items": [{"id": r[0], "done": r[1]} for r in results]}), 200
     except Exception as e:
@@ -260,12 +260,11 @@ def paystack_dummy_payment():
                     """,
                     (user_id, fixed_amount, "NGN", "success", payment_type),
                 )
-                # Validate fetchone() result before accessing
                 result = cur.fetchone()
                 if not result:
-                    return jsonify({"error": "No workout found"}), 404
+                    return jsonify({"error": "Payment recording failed"}), 500
 
-                workout_id = result[0]
+            conn.commit()
 
         return jsonify({
             "status": True,
