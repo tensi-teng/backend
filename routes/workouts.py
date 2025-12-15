@@ -28,7 +28,6 @@ def create_workout():
         equipment = []
         fileobj = None
 
-        # Prioritize form data (used when uploading files - multipart/form-data)
         if request.form:
             name = request.form.get("name")
             description = request.form.get("description", "").strip()
@@ -37,20 +36,17 @@ def create_workout():
                 equipment = [e.strip() for e in raw_eq.split(",") if e.strip()]
             fileobj = request.files.get("file")
 
-        # Fallback to JSON if no name yet (pure JSON request)
         if not name and request.is_json:
             data = request.get_json()
             name = data.get("name")
             description = data.get("description", "").strip()
             equipment = data.get("equipment", []) or []
 
-        # Final validation
         if not name or not name.strip():
             return jsonify({"error": "name required"}), 400
 
         name = name.strip()
 
-        # Upload image if provided
         image_url = public_id = None
         if fileobj and fileobj.filename != "":
             uploaded = cloudinary.uploader.upload(
@@ -61,7 +57,6 @@ def create_workout():
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                # Subscription check
                 cur.execute(
                     "SELECT 1 FROM payments WHERE user_id=%s AND status='success' AND type='subscription' LIMIT 1",
                     (user_id,),
@@ -69,7 +64,6 @@ def create_workout():
                 if not cur.fetchone():
                     return jsonify({"error": "No active subscription found"}), 403
 
-                # Insert workout
                 cur.execute(
                     """
                     INSERT INTO workouts (name, description, equipment, user_id, image_url, public_id)
@@ -79,7 +73,6 @@ def create_workout():
                 )
                 workout_id = cur.fetchone()[0]
 
-                # Generate checklist items
                 for item in generate_checklist(equipment):
                     cur.execute(
                         "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s, %s, %s)",
@@ -93,48 +86,92 @@ def create_workout():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ---------------- LIST WORKOUTS ----------------
+
+# ---------------- LIST WORKOUTS WITH CHECKLIST ----------------
 @workouts_bp.route("/workouts", methods=["GET"])
 @jwt_required()
 def list_workouts():
     try:
         user_id = int(get_jwt_identity())
+
         with get_conn() as conn:
             with conn.cursor(row_factory=rows.dict_row) as cur:
+                # Fetch all workouts (created + saved)
                 cur.execute(
                     """
-                    SELECT id AS workout_id, NULL AS saved_id, name, description, equipment, image_url,
-                           NULL AS instructions, NULL AS muscles, NULL AS type, NULL AS level, 'created' AS source
-                    FROM workouts WHERE user_id=%s
-                    UNION ALL
-                    SELECT NULL AS workout_id, id AS saved_id, name, description, equipment, NULL AS image_url,
-                           instructions, muscles, type, level, 'saved' AS source
-                    FROM saved_workouts WHERE user_id=%s
-                    ORDER BY source DESC
-                    """,
-                    (user_id, user_id),
-                )
-                rows_data = cur.fetchall()
+                    SELECT 
+                        id AS workout_id, NULL::integer AS saved_id,
+                        name, description, equipment, image_url,
+                        NULL AS instructions, NULL AS muscles, NULL AS type, NULL AS level,
+                        'created' AS source
+                    FROM workouts 
+                    WHERE user_id = %s
 
-        return jsonify([
-            {
-                "workout_id": r["workout_id"],
-                "saved_id": r["saved_id"],
-                "name": r["name"],
-                "description": r["description"],
-                "equipment": (r["equipment"] or "").split(","),
-                "image_url": r["image_url"],
-                "instructions": r["instructions"],
-                "muscles": r["muscles"],
-                "type": r["type"],
-                "level": r["level"],
-                "source": r["source"],
+                    UNION ALL
+
+                    SELECT 
+                        NULL::integer AS workout_id, id AS saved_id,
+                        name, description, equipment, NULL AS image_url,
+                        instructions, muscles, type, level,
+                        'saved' AS source
+                    FROM saved_workouts 
+                    WHERE user_id = %s
+
+                    ORDER BY source DESC, name
+                    """,
+                    (user_id, user_id)
+                )
+                workouts = cur.fetchall()
+
+                # Collect workout_ids for created workouts to fetch their checklist items
+                created_workout_ids = [w["workout_id"] for w in workouts if w["workout_id"] is not None]
+
+                checklist_map = {}
+                if created_workout_ids:
+                    cur.execute(
+                        """
+                        SELECT id, task, done, workout_id
+                        FROM checklist_items
+                        WHERE workout_id = ANY(%s)
+                        ORDER BY id
+                        """,
+                        (created_workout_ids,)
+                    )
+                    for row in cur.fetchall():
+                        wid = row["workout_id"]
+                        if wid not in checklist_map:
+                            checklist_map[wid] = []
+                        checklist_map[wid].append({
+                            "id": row["id"],
+                            "task": row["task"],
+                            "done": row["done"]
+                        })
+
+        # Build final response
+        response = []
+        for w in workouts:
+            workout_data = {
+                "workout_id": w["workout_id"],
+                "saved_id": w["saved_id"],
+                "name": w["name"],
+                "description": w["description"] or "",
+                "equipment": (w["equipment"] or "").split(",") if w["equipment"] else [],
+                "image_url": w["image_url"],
+                "instructions": w["instructions"],
+                "muscles": w["muscles"] or [],
+                "type": w["type"],
+                "level": w["level"],
+                "source": w["source"],
+                # Only created workouts have checklist items
+                "checklist": checklist_map.get(w["workout_id"], []) if w["workout_id"] else []
             }
-            for r in rows_data
-        ]), 200
+            response.append(workout_data)
+
+        return jsonify(response), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # ---------------- UPDATE WORKOUT ----------------
 @workouts_bp.route("/workouts/<int:workout_id>", methods=["PUT"])
@@ -166,15 +203,17 @@ def update_workout(workout_id):
                     cur.execute("DELETE FROM checklist_items WHERE workout_id=%s", (workout_id,))
                     for item in generate_checklist(data["equipment"]):
                         cur.execute(
-                            "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s,%s,%s)",
+                            "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s, %s, %s)",
                             (item["task"], item["done"], workout_id),
                         )
 
             conn.commit()
 
         return jsonify({"message": "updated"}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # ---------------- DELETE WORKOUT ----------------
 @workouts_bp.route("/workouts/<wid>", methods=["DELETE"])
@@ -182,6 +221,7 @@ def update_workout(workout_id):
 def delete_workout(wid):
     try:
         user_id = int(get_jwt_identity())
+
         with get_conn() as conn:
             with conn.cursor() as cur:
                 if wid.lower() == "all":
@@ -192,7 +232,9 @@ def delete_workout(wid):
                     cur.execute("DELETE FROM workouts WHERE user_id=%s", (user_id,))
                     cur.execute("DELETE FROM saved_workouts WHERE user_id=%s", (user_id,))
                 else:
-                    ids = [int(i) for i in wid.split(",")]
+                    ids = [int(i) for i in wid.split(",") if i.isdigit()]
+                    if not ids:
+                        return jsonify({"error": "Invalid IDs"}), 400
                     cur.execute("DELETE FROM checklist_items WHERE workout_id = ANY(%s)", (ids,))
                     cur.execute("DELETE FROM workouts WHERE id = ANY(%s) AND user_id=%s", (ids, user_id))
                     cur.execute("DELETE FROM saved_workouts WHERE id = ANY(%s) AND user_id=%s", (ids, user_id))
@@ -200,41 +242,63 @@ def delete_workout(wid):
             conn.commit()
 
         return jsonify({"message": "deleted"}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ---------------- TOGGLE CHECKLIST ----------------
-@workouts_bp.route("/workouts/<int:workout_id>/checklist", methods=["PATCH"])
+
+# ---------------- TOGGLE SINGLE CHECKLIST ITEM ----------------
+@workouts_bp.route("/checklist/items/<int:item_id>", methods=["PATCH"])
 @jwt_required()
-def toggle_checklist(workout_id):
+def toggle_checklist_item(item_id):
+    """
+    Toggle the 'done' status of a single checklist item.
+    URL: PATCH /users/checklist/items/<item_id>
+    No body required.
+    """
     try:
         user_id = int(get_jwt_identity())
-        data = request.get_json(silent=True)
-        if not data:
-            return jsonify({"error": "Invalid JSON payload"}), 400
-
-        item_ids = data.get("item_ids", [])
-        if not isinstance(item_ids, list):
-            return jsonify({"error": "item_ids must be a list"}), 400
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT user_id FROM workouts WHERE id=%s", (workout_id,))
-                row = cur.fetchone()
-                if not row or row[0] != user_id:
-                    return jsonify({"error": "Not allowed"}), 403
-
+                # Verify ownership through workout
                 cur.execute(
-                    "UPDATE checklist_items SET done = NOT done WHERE workout_id=%s AND id = ANY(%s) RETURNING id, done",
-                    (workout_id, item_ids),
+                    """
+                    SELECT ci.id, ci.done
+                    FROM checklist_items ci
+                    JOIN workouts w ON ci.workout_id = w.id
+                    WHERE ci.id = %s AND w.user_id = %s
+                    """,
+                    (item_id, user_id)
                 )
-                results = cur.fetchall()
+                row = cur.fetchone()
+
+                if not row:
+                    return jsonify({"error": "Checklist item not found or not authorized"}), 404
+
+                # Toggle
+                cur.execute(
+                    """
+                    UPDATE checklist_items
+                    SET done = NOT done
+                    WHERE id = %s
+                    RETURNING id, done
+                    """,
+                    (item_id,)
+                )
+                result = cur.fetchone()
+                toggled_item = {"id": result[0], "done": result[1]}
 
             conn.commit()
 
-        return jsonify({"updated": len(results), "items": [{"id": r[0], "done": r[1]} for r in results]}), 200
+        return jsonify({
+            "message": "Checklist item toggled successfully",
+            "item": toggled_item
+        }), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # ---------------- DUMMY PAYSTACK PAYMENT ----------------
 @workouts_bp.route("/paystack/dummy-payment", methods=["POST"])
@@ -268,12 +332,13 @@ def paystack_dummy_payment():
 
         return jsonify({
             "status": True,
-            "message": f"{payment_type.capitalize()} payment of NGN {result[1]} successful",
+            "message": f"{payment_type.capitalize()} payment of NGN {fixed_amount} successful",
             "data": {
                 "payment_id": result[0],
                 "reference": "DUMMY_SUB_REFERENCE",
                 "authorization_url": "https://paystack.com/dummy-authorization",
             },
         }), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
