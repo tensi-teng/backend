@@ -4,9 +4,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import cloudinary
 import cloudinary.uploader
 
-from ...extensions import db
-from ...domain import Workout, Payment, ChecklistItem, SavedWorkout
-from ...utils.generate_checklist import generate_checklist
+from ..extensions import db
+from ..domain import Workout, Payment, ChecklistItem, SavedWorkout
+from ..utils.generate_checklist import generate_checklist
 
 
 cloudinary.config(
@@ -56,7 +56,6 @@ def create_workout():
             image_url = uploaded.get("secure_url")
             public_id = uploaded.get("public_id")
 
-        # verify active subscription
         has_sub = (
             db.session.query(Payment)
             .filter_by(user_id=user_id, status="success", type="subscription")
@@ -160,7 +159,6 @@ def list_workouts():
                 }
             )
 
-        # order by source DESC, name to match previous behavior
         response.sort(
             key=lambda x: (
                 0 if x["source"] == "saved" else 1,
@@ -264,7 +262,6 @@ def delete_workout(wid):
         user_id = int(get_jwt_identity())
 
         if wid.lower() == "all":
-            # Delete all for user
             user_workouts = db.session.query(Workout).filter_by(user_id=user_id).all()
             for w in user_workouts:
                 db.session.query(ChecklistItem).filter_by(workout_id=w.id).delete()
@@ -297,7 +294,6 @@ def toggle_checklist_item(item_id):
     try:
         user_id = int(get_jwt_identity())
 
-        # Ensure item belongs to a workout owned by user
         item = db.session.query(ChecklistItem).get(item_id)
         if not item:
             return jsonify({"error": "Checklist item not found or not authorized"}), 404

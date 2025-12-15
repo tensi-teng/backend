@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from ...extensions import db
-from ...domain import Reminder
+from ..extensions import db
+from ..domain import Reminder
 
 bp = Blueprint("reminders", __name__)
 

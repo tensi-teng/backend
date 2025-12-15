@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, jwt_required
 
-from ...extensions import db
-from ...domain import PublicWorkout, SavedWorkout, ChecklistItem
-from ...utils.generate_checklist import generate_checklist
+from ..extensions import db
+from ..models import PublicWorkout, SavedWorkout, ChecklistItem
+from ..utils.generate_checklist import generate_checklist
 
 bp = Blueprint("public", __name__)
 
@@ -26,7 +26,6 @@ def get_workouts():
         if type_filter:
             q = q.filter(PublicWorkout.type.ilike(f"%{type_filter}%"))
         if muscle_filter:
-            # muscles is an ARRAY; use any() for contains-like
             q = q.filter(
                 db.func.lower(muscle_filter).op("=")(
                     db.any(db.func.lower(PublicWorkout.muscles))

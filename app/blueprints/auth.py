@@ -1,6 +1,11 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt, get_jwt_identity
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt,
+    get_jwt_identity,
+)
 
 from ..extensions import db
 from ..models import User, Gesture
@@ -28,11 +33,11 @@ def register():
     if not all([username, password, name, reg_number, email]):
         return jsonify({"error": "All fields are required"}), 400
 
-    existing_user = (
-        User.query.filter(
-            (User.username == username) | (User.email == email) | (User.reg_number == reg_number)
-        ).first()
-    )
+    existing_user = User.query.filter(
+        (User.username == username)
+        | (User.email == email)
+        | (User.reg_number == reg_number)
+    ).first()
     if existing_user:
         if existing_user.username == username:
             return jsonify({"error": "Username already exists"}), 400
@@ -42,7 +47,13 @@ def register():
             return jsonify({"error": "Registration number already exists"}), 400
 
     hashed_pw = generate_password_hash(password)
-    user = User(username=username, password=hashed_pw, name=name, reg_number=reg_number, email=email)
+    user = User(
+        username=username,
+        password=hashed_pw,
+        name=name,
+        reg_number=reg_number,
+        email=email,
+    )
     db.session.add(user)
     db.session.flush()
 
@@ -50,7 +61,10 @@ def register():
         db.session.add(Gesture(name=g["name"], action=g["action"], user_id=user.id))
 
     db.session.commit()
-    return jsonify({"message": "User registered successfully", "user_id": str(user.id)}), 201
+    return (
+        jsonify({"message": "User registered successfully", "user_id": str(user.id)}),
+        201,
+    )
 
 
 @bp.route("/login", methods=["POST"])
@@ -65,8 +79,13 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    token = create_access_token(identity=str(user.id), additional_claims={"username": username})
-    return jsonify({"token": token, "user": {"id": str(user.id), "username": username}}), 200
+    token = create_access_token(
+        identity=str(user.id), additional_claims={"username": username}
+    )
+    return (
+        jsonify({"token": token, "user": {"id": str(user.id), "username": username}}),
+        200,
+    )
 
 
 @bp.route("/me", methods=["GET"])
