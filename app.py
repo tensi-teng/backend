@@ -1,59 +1,7 @@
-from flask import Flask
-from dotenv import load_dotenv
 import os
-from flasgger import Swagger
-from flask_jwt_extended import JWTManager
-from datetime import timedelta
+from app import create_app
 
+app = create_app()
 
-# Load .env file
-load_dotenv()
-PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
-BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
-
-# Initialize Flask app
-app = Flask(__name__)
-
-# Set JWT secret
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-secret')
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)
-
-
-# === Debug Print for Environment Variables ===
-db_url = os.getenv("DATABASE_URL")
-jwt_key = os.getenv("JWT_SECRET_KEY")
-cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
-cloud_api_key = os.getenv("CLOUDINARY_API_KEY")
-cloud_api_secret = os.getenv("CLOUDINARY_API_SECRET")
-
-def mask(value):
-    """Mask sensitive values for safe logging."""
-    return value[:5] + "..." + value[-5:] if value and len(value) > 10 else value or "None"
-
-print("\n=== Environment Variables Check ===")
-print("DATABASE_URL:", mask(db_url))
-print("JWT_SECRET_KEY:", mask(jwt_key))
-print("CLOUDINARY_CLOUD_NAME:", mask(cloud_name))
-print("CLOUDINARY_API_KEY:", mask(cloud_api_key))
-print("CLOUDINARY_API_SECRET:", mask(cloud_api_secret))
-print("PAYSTACK_SECRET_KEY:", mask(PAYSTACK_SECRET_KEY))
-print("-------------------\n")
-
-# JWT setup
-jwt = JWTManager(app)
-
-# Import blueprints
-from routes.auth import auth_bp
-from routes.workouts import workouts_bp
-from routes.public_api import public_bp
-from routes.reminders import reminders_bp
-
-# Register blueprints
-app.register_blueprint(auth_bp, url_prefix='/auth')
-app.register_blueprint(workouts_bp, url_prefix='/users')
-app.register_blueprint(public_bp, url_prefix='/public')
-app.register_blueprint(reminders_bp, url_prefix='/api')
-
-# Run app
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=True)
