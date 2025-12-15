@@ -96,7 +96,6 @@ def list_workouts():
 
         with get_conn() as conn:
             with conn.cursor(row_factory=rows.dict_row) as cur:
-                # Fetch all workouts (created + saved)
                 cur.execute(
                     """
                     SELECT 
@@ -123,7 +122,6 @@ def list_workouts():
                 )
                 workouts = cur.fetchall()
 
-                # Collect workout_ids for created workouts to fetch their checklist items
                 created_workout_ids = [w["workout_id"] for w in workouts if w["workout_id"] is not None]
 
                 checklist_map = {}
@@ -147,7 +145,6 @@ def list_workouts():
                             "done": row["done"]
                         })
 
-        # Build final response
         response = []
         for w in workouts:
             workout_data = {
@@ -162,7 +159,6 @@ def list_workouts():
                 "type": w["type"],
                 "level": w["level"],
                 "source": w["source"],
-                # Only created workouts have checklist items
                 "checklist": checklist_map.get(w["workout_id"], []) if w["workout_id"] else []
             }
             response.append(workout_data)
@@ -173,35 +169,96 @@ def list_workouts():
         return jsonify({"error": str(e)}), 500
 
 
-# ---------------- UPDATE WORKOUT ----------------
+# ---------------- UPDATE WORKOUT (NOW SUPPORTS IMAGE UPDATE) ----------------
 @workouts_bp.route("/workouts/<int:workout_id>", methods=["PUT"])
 @jwt_required()
 def update_workout(workout_id):
     try:
         user_id = int(get_jwt_identity())
-        data = request.get_json(silent=True) or {}
 
-        if not data:
-            return jsonify({"error": "Invalid request payload"}), 400
-
+        # First: Verify ownership and get current public_id for Cloudinary cleanup
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT user_id FROM workouts WHERE id=%s", (workout_id,))
+                cur.execute("SELECT user_id, public_id FROM workouts WHERE id=%s", (workout_id,))
                 row = cur.fetchone()
                 if not row:
                     return jsonify({"error": "Workout not found"}), 404
                 if row[0] != user_id:
                     return jsonify({"error": "Not allowed"}), 403
+                old_public_id = row[1]
 
-                if "name" in data:
-                    cur.execute("UPDATE workouts SET name=%s WHERE id=%s", (data["name"], workout_id))
-                if "description" in data:
-                    cur.execute("UPDATE workouts SET description=%s WHERE id=%s", (data["description"], workout_id))
-                if "equipment" in data:
-                    eq = ",".join(data["equipment"])
-                    cur.execute("UPDATE workouts SET equipment=%s WHERE id=%s", (eq, workout_id))
+        # Parse incoming data — support both multipart (file) and JSON
+        name = None
+        description = None
+        equipment = None
+        fileobj = None
+
+        # Handle multipart/form-data (image upload + optional fields)
+        if request.files or request.form:
+            fileobj = request.files.get("file")
+            name = request.form.get("name")
+            description = request.form.get("description", "").strip() or None
+            raw_eq = request.form.get("equipment")
+            if raw_eq is not None:
+                equipment = [e.strip() for e in raw_eq.split(",") if e.strip()]
+
+        # Handle JSON (text-only updates)
+        if request.is_json:
+            data = request.get_json(silent=True) or {}
+            name = data.get("name", name)
+            description = data.get("description", "").strip() or description
+            if "equipment" in data:
+                equipment = [e.strip() for e in data["equipment"] if e.strip()] if data["equipment"] else None
+
+        # If nothing to update
+        if all(v is None for v in [name, description, equipment, fileobj]):
+            return jsonify({"error": "No updates provided"}), 400
+
+        # Handle new image upload
+        new_image_url = None
+        new_public_id = None
+        if fileobj and fileobj.filename != "":
+            if not fileobj.mimetype.startswith("image/"):
+                return jsonify({"error": "Only image files are allowed"}), 400
+
+            uploaded = cloudinary.uploader.upload(
+                fileobj,
+                folder=f"workouts/{user_id}",
+                resource_type="image",
+                overwrite=True,  # Overwrite same public_id if possible
+            )
+            new_image_url = uploaded.get("secure_url")
+            new_public_id = uploaded.get("public_id")
+
+            # Clean up old image from Cloudinary (if different)
+            if old_public_id and old_public_id != new_public_id:
+                try:
+                    cloudinary.uploader.destroy(old_public_id)
+                except Exception:
+                    pass  # Ignore if already deleted
+
+        # Regenerate checklist if equipment changed
+        regenerate_checklist = equipment is not None
+
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                if name is not None:
+                    cur.execute("UPDATE workouts SET name=%s WHERE id=%s", (name.strip(), workout_id))
+                if description is not None:
+                    cur.execute("UPDATE workouts SET description=%s WHERE id=%s", (description, workout_id))
+                if equipment is not None:
+                    eq_str = ",".join(equipment)
+                    cur.execute("UPDATE workouts SET equipment=%s WHERE id=%s", (eq_str, workout_id))
+
+                if new_image_url:
+                    cur.execute(
+                        "UPDATE workouts SET image_url=%s, public_id=%s WHERE id=%s",
+                        (new_image_url, new_public_id, workout_id)
+                    )
+
+                if regenerate_checklist:
                     cur.execute("DELETE FROM checklist_items WHERE workout_id=%s", (workout_id,))
-                    for item in generate_checklist(data["equipment"]):
+                    for item in generate_checklist(equipment):
                         cur.execute(
                             "INSERT INTO checklist_items (task, done, workout_id) VALUES (%s, %s, %s)",
                             (item["task"], item["done"], workout_id),
@@ -209,7 +266,7 @@ def update_workout(workout_id):
 
             conn.commit()
 
-        return jsonify({"message": "updated"}), 200
+        return jsonify({"message": "Workout updated successfully"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -251,17 +308,11 @@ def delete_workout(wid):
 @workouts_bp.route("/checklist/items/<int:item_id>", methods=["PATCH"])
 @jwt_required()
 def toggle_checklist_item(item_id):
-    """
-    Toggle the 'done' status of a single checklist item.
-    URL: PATCH /users/checklist/items/<item_id>
-    No body required.
-    """
     try:
         user_id = int(get_jwt_identity())
 
         with get_conn() as conn:
             with conn.cursor() as cur:
-                # Verify ownership through workout
                 cur.execute(
                     """
                     SELECT ci.id, ci.done
@@ -276,7 +327,6 @@ def toggle_checklist_item(item_id):
                 if not row:
                     return jsonify({"error": "Checklist item not found or not authorized"}), 404
 
-                # Toggle
                 cur.execute(
                     """
                     UPDATE checklist_items
