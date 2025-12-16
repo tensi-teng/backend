@@ -22,7 +22,10 @@ def init_logging(app):
     if not logger.handlers:
         handler = logging.StreamHandler()
         handler.setFormatter(
-            ColoredFormatter("%(levelname)s: %(name)s:%(funcName)s:L%(lineno)d: %(message)s")
+            ColoredFormatter(
+                "%(levelname)s: %(name)s:%(funcName)s:L%(lineno)d: %(message)s"
+            )
         )
         logger.addHandler(handler)
+
     logger.setLevel(logging.DEBUG if app.debug else logging.INFO)

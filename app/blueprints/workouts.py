@@ -5,8 +5,10 @@ import cloudinary
 import cloudinary.uploader
 
 from ..extensions import db
-from ..domain import Workout, Payment, ChecklistItem, SavedWorkout
+from ..models.workouts import Workout, ChecklistItem, SavedWorkout
+from ..models.payments import Payment
 from ..utils.generate_checklist import generate_checklist
+
 
 
 cloudinary.config(

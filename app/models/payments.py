@@ -1,11 +1,7 @@
-from typing import Optional
-
-from sqlalchemy import Integer, String
+from datetime import datetime
+from sqlalchemy import Integer, String, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.sql import func
-
 from ..extensions import db
-
 
 class Payment(db.Model):
     __tablename__ = "payments"
@@ -17,4 +13,4 @@ class Payment(db.Model):
     currency: Mapped[str] = mapped_column(String(10), default="NGN")
     status: Mapped[str] = mapped_column(String(50), default="pending")
     type: Mapped[str] = mapped_column(String(50), default="subscription")
-    paid_at = mapped_column(server_default=func.now())
+    paid_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

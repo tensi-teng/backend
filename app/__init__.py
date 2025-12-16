@@ -16,7 +16,7 @@ def create_app():
         "JWT_SECRET_KEY", os.environ.get("JWT_SECRET_KEY", "dev-secret")
     )
     app.config.setdefault("JWT_ACCESS_TOKEN_EXPIRES", timedelta(days=7))
-    app.config.setdefault("AUTO_MIGRATE", True)
+    app.config.setdefault("AUTO_MIGRATE", False)
 
     # Load config from environment with prefix, e.g., APP_SQLALCHEMY_DATABASE_URI
     # See https://flask.palletsprojects.com/ for from_prefixed_env
@@ -36,7 +36,7 @@ def create_app():
         pass
 
     # Init logging
-    from .logging import init_logging
+    from .logger import init_logging
 
     init_logging(app)
 
